@@ -15,6 +15,9 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(config["mqtt"]["broker_port"], 1883)
         self.assertFalse(config["leds"]["enabled"])
         self.assertEqual(config["rlc_percentages"]["rlc2"], 50)
+        self.assertTrue(config["home_assistant"]["discovery"])
+        self.assertEqual(config["pv"]["grid_power_topic"], "juicebooster/ha/gridPower")
+        self.assertEqual(config["pv"]["min_current"], 6.0)
 
     def test_values_are_normalized(self) -> None:
         config = normalize_config(
@@ -30,10 +33,15 @@ class ConfigTests(unittest.TestCase):
         self.assertIsNone(config["mqtt"]["username"])
         self.assertEqual(config["logging"]["level"], "DEBUG")
         self.assertTrue(config["leds"]["enabled"])
+        self.assertEqual(config["pv"]["grid_power_topic"], "charger/ha/gridPower")
 
     def test_invalid_rlc_percentage_is_rejected(self) -> None:
         with self.assertRaises(ConfigError):
             normalize_config({"rlc_percentages": {"rlc1": 101}})
+
+    def test_invalid_pv_config_is_rejected(self) -> None:
+        with self.assertRaises(ConfigError):
+            normalize_config({"pv": {"phases": 4}})
 
     def test_env_config_path_is_supported(self) -> None:
         with patch.dict(os.environ, {"CHARGER_EASY_CONFIG": "/tmp/charger.yaml"}):
@@ -43,4 +51,3 @@ class ConfigTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

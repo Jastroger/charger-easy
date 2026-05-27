@@ -1,0 +1,25 @@
+# Home Assistant package example.
+# Replace sensor.grid_power with your meter entity.
+#
+# Sign convention expected by the charger:
+#   positive = grid import
+#   negative = grid export
+
+automation:
+  - alias: "Juice Charger Easy: Netzleistung per MQTT senden"
+    id: juice_charger_easy_publish_grid_power
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: sensor.grid_power
+      - platform: time_pattern
+        seconds: "/15"
+    condition:
+      - condition: template
+        value_template: "{{ is_number(states('sensor.grid_power')) }}"
+    action:
+      - action: mqtt.publish
+        data:
+          topic: "juicebooster/ha/gridPower"
+          payload: "{{ states('sensor.grid_power') | float }}"
+          retain: false

@@ -1,0 +1,33 @@
+# Example Lovelace card.
+# Entity IDs are based on the default Home Assistant MQTT Discovery object IDs.
+
+type: entities
+title: Juice Charger Easy
+show_header_toggle: false
+entities:
+  - entity: select.juice_charger_easy_mode
+    name: Modus
+  - entity: number.juice_charger_easy_instant_current
+    name: Sofortladestrom
+  - entity: sensor.juice_charger_easy_cp_state
+    name: CP-State
+  - entity: binary_sensor.juice_charger_easy_vehicle_connected
+    name: Fahrzeug verbunden
+  - entity: binary_sensor.juice_charger_easy_is_charging
+    name: Laedt
+  - entity: binary_sensor.juice_charger_easy_hardware_override_free_charge
+    name: FreeCharge Override
+  - entity: sensor.juice_charger_easy_grid_power_w
+    name: Netzleistung
+  - entity: sensor.juice_charger_easy_pv_surplus_w
+    name: PV-Ueberschuss
+  - entity: sensor.juice_charger_easy_target_current_a
+    name: Zielstrom
+  - entity: sensor.juice_charger_easy_effective_current_a
+    name: Effektiver Strom
+  - entity: sensor.juice_charger_easy_hw_max_current
+    name: Hardware-Maximum
+  - entity: sensor.juice_charger_easy_rlc_percentage
+    name: RLC-Begrenzung
+  - entity: sensor.juice_charger_easy_limit_reason
+    name: Limitierungsgrund

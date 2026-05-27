@@ -62,3 +62,25 @@ buzzer:
         - {f: 0, d: 100}
         - {f: 3000, d: 200}
         - {f: 0, d: 0}
+
+# Home Assistant MQTT Discovery
+home_assistant:
+  discovery: true
+  discovery_prefix: "homeassistant"
+  device_id: "juice_charger_easy"
+  device_name: "Juice Charger Easy"
+
+# PV surplus charging.
+# Home Assistant publishes the current grid power to grid_power_topic.
+# Default sign convention: positive = grid import, negative = export.
+pv:
+  grid_power_topic: "juicebooster/ha/gridPower"
+  grid_power_export_negative: true
+  voltage: 230
+  phases: 1
+  min_current: 6
+  current_step: 1
+  reserve_w: 100
+  start_delay_seconds: 60
+  stop_delay_seconds: 180
+  input_timeout_seconds: 60
