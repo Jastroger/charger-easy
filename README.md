@@ -1,165 +1,143 @@
-# Juice Booster (Juice Charger Easy) — EVCC / MQTT Integration  
+# Juice Booster / Juice CHARGER Easy MQTT integration
 
-### Deutsch  
+This repository contains a Raspberry Pi control service for replacing the original
+Juice CHARGER Easy control path and integrating the charger with EVCC via MQTT.
 
-Dieses Repository enthält die Software, um die ursprüngliche Steuerung des **Juice Booster (Juice CHARGER Easy)** vollständig zu ersetzen und die Integration in **EVCC** über **MQTT** zu ermöglichen.  
+Important: this project changes charging behavior. Use it only if you understand
+the electrical and hardware risks. The hardware current selector remains the
+upper safety limit used by the software.
 
-⚠️ **Wichtig: Dieses Projekt verändert das Ladeverhalten des Juice Booster.**  
+## Features
 
-### Update
-Da der Booster jetzt auch bei einigen im PV Modus in EVCC verwendet wird gibt es einige Probleme was das regelverhalten des Ladestroms angeht. Ich werde hier schauen, dass man die Stromstärke unabhängig vom aufdruck des Boosters (6,8,10,13 A...) setzten kann, damit man den PV-überschuss besser nutzen kann.  
+- MQTT control compatible with EVCC custom chargers.
+- FreeCharge mode through DIP1.
+- RLC current reduction through DIP2 and four RLC inputs.
+- CP state reporting (`A`, `B`, `C`, `E`, `F`).
+- MCP4161 RAM writes for runtime current control and EEPROM fallback on startup.
+- Testable Python package with Raspberry Pi GPIO/SPI isolated in one adapter.
 
+## Runtime behavior
 
-### Funktionen  
+The default entry point remains compatible:
 
-- Ersetzt die originale Juice Booster Ansteuerung im Juice CHARGER Easy.  
-- Stellt Steuerung über MQTT bereit (Integration in EVCC).  
-- Priorisierung: Hardware-RLC-Eingänge haben, wenn aktiv, Vorrang vor EVCC-Steuerung.  
+```bash
+python3 mqtt_client.py
+```
 
-### Funktion des JCeasy HAT  
+By default it loads:
 
-- **CP-Zustand (A, B, C, E, F)** wird per GPIO gelesen (PIC12F1572-E für CP-Auswertung).  
-  - Zustand A: Fahrzeug nicht angeschlossen und nicht ladebereit  
-  - Zustand B: Fahrzeug angeschlossen, aber nicht ladebereit  
-  - Zustand C: Fahrzeug angeschlossen und ladebereit  
-  - Zustand E: Fehlerzustand — Juice Booster nicht mit dem Charger Easy verbunden  
-    (Nach erneuter Verbindung muss der Charger Easy vom Strom getrennt und neu gestartet werden)  
-  - Zustand F: Allgemeiner Fehlerzustand  
+```text
+/opt/juice-charger/config.yaml
+```
 
-- **Ladestromregelung** über MCP4161-103E:  
-  - Beim ersten Start wird im EEPROM-Register (0x20) ein „Maximalstrom“ als Hardware-Fallback gespeichert.  
-  - Für den laufenden Betrieb wird das RAM-Register 0x00 verwendet (volatile Pot-Wert).  
+Alternative config paths:
 
-- **DIP-Schalter, Codierschalter und RLC-Eingänge** werden beim Start eingelesen.  
-- Unterstützte Ströme: 6A, 8A, 10A, 13A, 16A, 20A, 25A, 32A.  
-  (Eine feinere Ansteuerung ist eventuell möglich.)  
+```bash
+python3 mqtt_client.py --config ./config.yaml
+CHARGER_EASY_CONFIG=./config.yaml python3 mqtt_client.py
+```
 
-### RLC Eingänge  
+The old imports also continue to work:
 
-RLC-Inputs können prozentuale Begrenzungen darstellen (per config). Reihenfolge von oben nach unten:  
-- RLC 1  
-- RLC 2  
-- RLC 3  
-- RLC 4  
+```python
+from juice_booster_control import JuiceBoosterControl
+```
 
-### LEDs  
+## DIP and LED logic
 
-- LEDs können in der config deaktiviert werden.  
-- grün = EVCC aktiv  
-- blau = RLC-Eingang ist aktiv  
+The DIP switches are active-low: `ON` means the GPIO reads `LOW`.
 
-### DIP-Schalter  
+- DIP1 ON: FreeCharge mode.
+- DIP1 OFF: EVCC mode.
+- DIP2 ON: RLC reductions are active.
+- DIP2 OFF: RLC inputs are ignored.
+- RLC inputs use pull-downs and are active when the input reads `HIGH`.
 
-- **DIP1**: EVCC / FreeCharge  
-  - ON → FreeCharge  
-  - OFF → EVCC-Modus  
-- **DIP2**: RLC-Inputs aktivieren (4 Eingänge)  
-  - ON → RLC-Inputs aktiv  
-  - OFF → keine Reduzierung durch RLC-Inputs  
+LEDs, when enabled in `config.yaml`:
 
-### EVCC  
+- Green: EVCC mode active.
+- Blue: RLC mode active.
 
-- Beispielkonfiguration: `evcc.yaml`  
-- Die Steuerung über Ampere wird auf die Juice Booster Werte gemappt.  
-- Feinere Ansteuerung in Arbeit.  
+## Current limits
 
-### Test  
+The effective current is always limited by:
 
-- `set-cc.py` erlaubt manuelles Setzen des Ladestroms (0–32 A).  
+1. The requested MQTT/FreeCharge current.
+2. The hardware maximum current selector.
+3. The strongest active RLC reduction.
 
-### ToDo  
+MQTT current payloads may be integer or decimal values. Negative values are
+clamped to `0`. Invalid current payloads are ignored. The MCP4161 output is still
+mapped to the known Juice Booster current curve:
 
-- RFID-Integration  
-- mA-Regelung  
+```text
+0A, 6A, 8A, 10A, 13A, 16A, 20A, 25A, 32A
+```
 
----
+## MQTT topics
 
-### English  
+With the default `base_topic: juicebooster`, the service keeps these topics:
 
-This repository contains the software to **fully replace the original control logic of the Juice Booster (Juice CHARGER Easy)** and to enable integration into **EVCC** via **MQTT**.  
+- `juicebooster/enable/set`
+- `juicebooster/maxCurrent/set`
+- `juicebooster/status`
+- `juicebooster/enabled`
+- `juicebooster/chargeCurrent`
+- `juicebooster/debug/status`
 
-⚠️ **Important: This project modifies the charging behavior of the Juice Booster.**  
+## Configuration
 
-### Features  
+Use `config.yaml` as the template. Existing sections remain valid:
 
-- Replaces the original Juice Booster control inside the Juice CHARGER Easy.  
-- Provides MQTT control (integration into EVCC).  
-- Priority: Hardware RLC inputs take precedence over EVCC control when active.  
+- `mqtt`
+- `logging`
+- `rlc_percentages`
+- `leds`
+- `buzzer`
 
-### JCeasy HAT Function  
+Credentials in the example files are placeholders. Set your broker host,
+username and password locally before deploying.
 
-- **CP state (A, B, C, E, F)** is read via GPIO (PIC12F1572-E for CP evaluation).  
-  - State A: Vehicle not connected and not ready to charge  
-  - State B: Vehicle connected, not ready to charge  
-  - State C: Vehicle connected and ready to charge  
-  - State E: Error — Juice Booster not connected to Charger Easy  
-    (After reconnection, Charger Easy must be power-cycled)  
-  - State F: General error  
+## Installation
 
-- **Charging current control** via MCP4161-103E:  
-  - On first startup, the EEPROM register (0x20) is written with a “maximum current” as hardware fallback.  
-  - During runtime, the RAM register 0x00 is used (volatile pot value).  
+On the Raspberry Pi:
 
-- **DIP switches, coding switches, and RLC inputs** are read at startup.  
-- Supported currents: 6A, 8A, 10A, 13A, 16A, 20A, 25A, 32A.  
-  (Finer adjustment may be possible.)  
+```bash
+python3 -m pip install -r requirements.txt
+```
 
-### RLC Inputs  
+For development and tests:
 
-RLC inputs can represent predefined percentages (configured in `config`). Order from top to bottom:  
-- RLC 1  
-- RLC 2  
-- RLC 3  
-- RLC 4  
+```bash
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests
+python -m pytest
+```
 
-### LEDs  
+## Manual hardware test
 
-- LEDs can be disabled via config.  
-- green = EVCC active  
-- blue = RLC input active  
+Interactive compatibility wrapper:
 
-### DIP Switches  
+```bash
+sudo python3 test/set-cc.py
+```
 
-- **DIP1**: EVCC / FreeCharge  
-  - ON → FreeCharge  
-  - OFF → EVCC mode  
-- **DIP2**: Enable RLC inputs (4 inputs)  
-  - ON → RLC inputs active  
-  - OFF → no current reduction via RLC inputs  
+Preferred direct command:
 
-### EVCC  
+```bash
+sudo python3 -m charger_easy.tools.set_current 10
+```
 
-- Example configuration: `evcc.yaml`  
-- Current control is mapped to Juice Booster supported values.  
-- Finer adjustment is in progress.  
+Add `--eeprom` only when you intentionally want to write the non-volatile MCP4161
+EEPROM fallback register.
 
-### Test  
+## Legal notice
 
-- `set-cc.py` allows manual setting of charging current (0–32 A).  
+All product and brand names mentioned are the property of their respective
+owners. This project is not affiliated with Juice Technology AG.
 
-### ToDo  
+## Disclaimer
 
-- RFID integration  
-- mA regulation  
-
----
-
-## Rechtlicher Hinweis / Legal Notice  
-
-Alle verwendeten Produkt- und Markennamen sind Eigentum der jeweiligen Inhaber.  
-Die Nennung dient ausschließlich Informationszwecken und bedeutet keine  
-Verbindung oder Unterstützung durch die genannten Unternehmen.  
-Dieses Projekt steht in keinerlei offizieller Beziehung zur **Juice Technology AG**.  
-
-All product and brand names mentioned are the property of their respective owners.  
-The naming is for informational purposes only and does not imply any  
-connection or endorsement by the mentioned companies.  
-This project is in no way affiliated with **Juice Technology AG**.  
-
----
-
-## Haftungsausschluss / Disclaimer  
-
-**Ich übernehme keine Haftung für eventuelle Softwarefehler sowie daraus resultierende Überlastungen oder Defekte an der verwendeten Hardware (z. B. Juice Booster) und/oder der Hausinstallation. Dies gilt insbesondere im Zusammenhang mit der Begrenzung der maximalen Ladeleistung. Die Nutzung der bereitgestellten Software erfolgt auf eigene Gefahr.**  
-
-**I assume no liability for any software errors and any resulting overloads or damage to the hardware used (e.g. Juice Booster) and/or the house installation. This applies in particular in connection with the limitation of maximum charging power. The use of the provided software is at your own risk.**  
+I assume no liability for software errors or resulting overloads or damage to
+the used hardware, the Juice Booster, the house installation, vehicles or other
+equipment. Use the software at your own risk.

@@ -1,60 +1,60 @@
 # /opt/juice-charger/config.yaml
 
-# --- MQTT Einstellungen ---
+# MQTT settings
 mqtt:
-  broker_host: "mqtt.local"            # Hostname oder IP-Adresse Ihres MQTT-Brokers
-  broker_port: 1883                  # Port Ihres MQTT-Brokers
-  client_id: "JuiceBoosterPi"        # Eindeutige Client-ID für diesen Raspberry Pi
-  username: "myEVCC"               # MQTT-Benutzername 
-  password: "Paswdchager"                # MQTT-Passwort 
-  base_topic: "juicebooster"         # Basis-Topic für alle JuiceBooster-relevanten MQTT-Nachrichten
+  broker_host: "mqtt.local"
+  broker_port: 1883
+  client_id: "JuiceBoosterPi"
+  username: null
+  password: null
+  base_topic: "juicebooster"
 
-# --- Logging Einstellungen ---
-# MQTT hat zusätzlich einen Debug Topic
+# Logging settings
 logging:
-  file_path: "/opt/juice-charger/charger.log" # Pfad zur Log-Datei
-  level: "INFO"                               # Logging-Level (INFO, DEBUG, WARNING, ERROR)
+  file_path: "/opt/juice-charger/charger.log"
+  level: "INFO"
 
-# --- RLC Percentages (Werte frei definierbar) ---
-# Hier wird die reduzerung der Leistung über die 4 Eingänge definiert. Der DIP 2 muss auf ON stehen
-# Die Blaue LED gibt den Status an. 
+# RLC percentages.
+# DIP2 ON means GPIO LOW and enables these reductions.
+# RLC inputs use pull-downs and are active when the input reads HIGH.
+# If several RLC inputs are active, the strongest reduction wins.
 rlc_percentages:
-  rlc1: 75   # Prozentwert fuer RLC-Pin 1 (GPIO 21)
-  rlc2: 50   # Prozentwert fuer RLC-Pin 2 (GPIO 20)
-  rlc3: 25   # Prozentwert fuer RLC-Pin 3 (GPIO 16)
-  rlc4: 0    # Prozentwert fuer RLC-Pin 4 (GPIO 5)
-# --- Status LED ---
+  rlc1: 75
+  rlc2: 50
+  rlc3: 25
+  rlc4: 0
+
+# Status LEDs:
+# green = EVCC mode active
+# blue = RLC mode active
 leds:
   enabled: true
 
-
-# --- Buzzer Einstellungen ---
+# Buzzer settings
 buzzer:
   enabled: true
-  # Der buzzer kann aktiviert werde. Hier wird der ursprüngliche Buzzer-code von Juice CHARGER Easy verwendet
-
   melodies:
-    startup: 
+    startup:
       sequence:
         - {f: 3000, d: 400}
-        - {f: 0, d: 0} 
+        - {f: 0, d: 0}
 
-    car_connected: # Melodie wenn ein Auto verbunden wird
+    car_connected:
       sequence:
         - {f: 2000, d: 100}
         - {f: 0, d: 50}
         - {f: 2000, d: 100}
 
-    start_charging: # Melodie beim tatsaechlichen Start des Ladevorgangs 
+    start_charging:
       sequence:
         - {f: 3000, d: 400}
         - {f: 0, d: 0}
 
-    stop_charging: # Melodie wenn der Ladevorgang stoppt 
+    stop_charging:
       sequence:
-        - {f: 1000, d: 300} # Ein tiefer Ton
+        - {f: 1000, d: 300}
 
-    reject: # Melodie fuer eine Ablehnung (z.B. falsche RFID, Fehler)
+    reject:
       sequence:
         - {f: 3000, d: 200}
         - {f: 0, d: 100}
@@ -62,37 +62,3 @@ buzzer:
         - {f: 0, d: 100}
         - {f: 3000, d: 200}
         - {f: 0, d: 0}
-#Für eventuelle RFID integration
-    # selftest_completed: # Wird jetzt fuer 'startup' verwendet
-    #   sequence:
-    #     - {f: 3000, d: 400}
-    #     - {f: 0, d: 0}
-    # mastercard_stored:
-    #   sequence:
-    #     - {f: 3000, d: 1000}
-    #     - {f: 0, d: 0}
-    # add_card:
-    #   sequence:
-    #     - {f: 3000, d: 200}
-    #     - {f: 0, d: 200}
-    #     - {f: 3000, d: 1000}
-    #     - {f: 0, d: 0}
-    # remove_card:
-    #   sequence:
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 3000, d: 1000}
-    #    - {f: 0, d: 0}
-    # read_uid_failed:
-    #   sequence:
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 3000, d: 200}
-    #    - {f: 0, d: 200}
-    #    - {f: 0, d: 0}

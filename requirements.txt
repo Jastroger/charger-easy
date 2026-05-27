@@ -1,0 +1,4 @@
+paho-mqtt>=1.6
+PyYAML>=6.0
+RPi.GPIO>=0.7.1; platform_system == "Linux" and (platform_machine == "armv7l" or platform_machine == "aarch64" or platform_machine == "arm64")
+spidev>=3.6; platform_system == "Linux" and (platform_machine == "armv7l" or platform_machine == "aarch64" or platform_machine == "arm64")

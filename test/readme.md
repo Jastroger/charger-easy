@@ -1,15 +1,23 @@
-## Charging Current Control for MCP4161 Digital Potentiometer    
+# Manual current test
 
-Charging Current Control for MCP4161 Digital Potentiometer
-This project provides a simple Python script to temporarily control the maximum charging current via an MCP4161-103E digital potentiometer's RAM register. Unlike a physical potentiometer on a HAT board, this method allows you to bypass hardware limitations and set a current higher than the physically set value.
+The compatibility entry point still works:
 
-⚠️ Warning
-This script directly writes values to the digital potentiometer's register and has no built-in current limitation. Exercise caution as you can set the charging current higher than intended.
+```bash
+sudo python3 test/set-cc.py
+```
 
-run `sudo python3 set-cc.py `
+Preferred direct command:
 
-### Wirte EEPROM
+```bash
+sudo python3 -m charger_easy.tools.set_current 6
+```
 
-Write the EEPROM value for the time between power on and loading soft war to limit der max current.
+Use `--eeprom` only when you intentionally want to write the MCP4161 EEPROM register `0x20`.
+The default writes the volatile RAM register `0x00`.
 
-Register: `0x20`
+Automated tests do not need Raspberry Pi hardware:
+
+```bash
+python -m unittest discover -s tests
+python -m pytest
+```
