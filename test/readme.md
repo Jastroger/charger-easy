@@ -1,4 +1,9 @@
-# Manual current test
+# Legacy compatibility wrappers
+
+This folder is intentionally kept only for old manual commands. New code and
+new helper scripts should live in `charger_easy/tools/`.
+
+Automated tests live in `tests/`.
 
 The compatibility entry point still works:
 
@@ -20,4 +25,10 @@ Automated tests do not need Raspberry Pi hardware:
 ```bash
 python -m unittest discover -s tests
 python -m pytest
+```
+
+The local fake web dashboard for development runs through the package tool:
+
+```bash
+python -m charger_easy.tools.fake_web
 ```

@@ -60,6 +60,19 @@ hardware limits, RLC limits and the current reason for limiting or waiting. It
 also lets you switch between `off`, `pv` and `instant` and set the instant
 current. All hardware limits remain active.
 
+For local UI work without Raspberry Pi hardware, start the fake dashboard:
+
+```bash
+python -m charger_easy.tools.fake_web
+```
+
+Optional examples:
+
+```bash
+python -m charger_easy.tools.fake_web --mode instant --current 16
+python -m charger_easy.tools.fake_web --port 8081
+```
+
 ## DIP and LED logic
 
 The DIP switches are active-low: `ON` means the GPIO reads `LOW`.
@@ -193,6 +206,12 @@ python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests
 python -m pytest
 ```
+
+Repository structure for tests and helpers:
+
+- `tests/`: automated unit tests.
+- `charger_easy/tools/`: package tools for local development and hardware checks.
+- `test/`: legacy compatibility wrappers only, kept for old documented commands.
 
 ## Manual hardware test
 
