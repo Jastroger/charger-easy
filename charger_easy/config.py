@@ -52,6 +52,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "stop_delay_seconds": 180.0,
         "input_timeout_seconds": 60.0,
     },
+    "web": {
+        "enabled": True,
+        "host": "0.0.0.0",
+        "port": 8080,
+        "title": "Juice Charger Easy",
+    },
 }
 
 KNOWN_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}
@@ -98,6 +104,7 @@ def normalize_config(raw_config: Any) -> dict[str, Any]:
     _normalize_buzzer(config["buzzer"])
     _normalize_home_assistant(config["home_assistant"])
     _normalize_pv(config["pv"], config["mqtt"]["base_topic"])
+    _normalize_web(config["web"])
     return config
 
 
@@ -219,6 +226,15 @@ def _normalize_pv(pv_config: dict[str, Any], base_topic: str) -> None:
     pv_config["input_timeout_seconds"] = _positive_float(
         pv_config.get("input_timeout_seconds"), "pv.input_timeout_seconds"
     )
+
+
+def _normalize_web(web_config: dict[str, Any]) -> None:
+    if not isinstance(web_config, dict):
+        raise ConfigError("web muss ein YAML-Objekt sein.")
+    web_config["enabled"] = _as_bool(web_config.get("enabled", True), "web.enabled")
+    web_config["host"] = _require_string(web_config.get("host"), "web.host")
+    web_config["port"] = _int_between(web_config.get("port"), "web.port", 1, 65535)
+    web_config["title"] = _require_string(web_config.get("title"), "web.title")
 
 
 def _as_bool(value: Any, path: str) -> bool:

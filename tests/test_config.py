@@ -18,6 +18,8 @@ class ConfigTests(unittest.TestCase):
         self.assertTrue(config["home_assistant"]["discovery"])
         self.assertEqual(config["pv"]["grid_power_topic"], "juicebooster/ha/gridPower")
         self.assertEqual(config["pv"]["min_current"], 6.0)
+        self.assertTrue(config["web"]["enabled"])
+        self.assertEqual(config["web"]["port"], 8080)
 
     def test_values_are_normalized(self) -> None:
         config = normalize_config(
@@ -42,6 +44,10 @@ class ConfigTests(unittest.TestCase):
     def test_invalid_pv_config_is_rejected(self) -> None:
         with self.assertRaises(ConfigError):
             normalize_config({"pv": {"phases": 4}})
+
+    def test_invalid_web_config_is_rejected(self) -> None:
+        with self.assertRaises(ConfigError):
+            normalize_config({"web": {"port": 70000}})
 
     def test_env_config_path_is_supported(self) -> None:
         with patch.dict(os.environ, {"CHARGER_EASY_CONFIG": "/tmp/charger.yaml"}):

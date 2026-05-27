@@ -13,6 +13,7 @@ upper safety limit used by the software.
 - MQTT control compatible with EVCC custom chargers.
 - Home Assistant MQTT Discovery with controls and status entities.
 - Internal PV surplus charging based on a Home Assistant grid-power MQTT value.
+- Local web dashboard for live status and simple control.
 - FreeCharge mode through DIP1.
 - RLC current reduction through DIP2 and four RLC inputs.
 - CP state reporting (`A`, `B`, `C`, `E`, `F`).
@@ -45,6 +46,19 @@ The old imports also continue to work:
 ```python
 from juice_booster_control import JuiceBoosterControl
 ```
+
+## Web dashboard
+
+The service starts a small local web dashboard when `web.enabled` is true:
+
+```text
+http://<raspberry-pi-ip>:8080/
+```
+
+The dashboard shows live charging status, PV surplus, grid power, CP-state,
+hardware limits, RLC limits and the current reason for limiting or waiting. It
+also lets you switch between `off`, `pv` and `instant` and set the instant
+current. All hardware limits remain active.
 
 ## DIP and LED logic
 
@@ -159,6 +173,7 @@ Use `config.yaml` as the template. Existing sections remain valid:
 - `buzzer`
 - `home_assistant`
 - `pv`
+- `web`
 
 Credentials in the example files are placeholders. Set your broker host,
 username and password locally before deploying.

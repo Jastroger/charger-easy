@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
 from typing import Any, Callable
 
 from charger_easy.controller import JuiceBoosterControl
 from charger_easy.home_assistant import HomeAssistantConfig, HomeAssistantDiscovery
 from charger_easy.pv import PvConfig, PvDecision, PvRegulator
+from charger_easy.web import WebConfig, WebDashboardServer
 
 VALID_MODES = {"off", "pv", "instant"}
 
@@ -57,6 +59,13 @@ class ChargerRuntime:
             stop_delay_seconds=pv_config["stop_delay_seconds"],
             input_timeout_seconds=pv_config["input_timeout_seconds"],
         )
+        web_config = config["web"]
+        self.web_config = WebConfig(
+            enabled=web_config["enabled"],
+            host=web_config["host"],
+            port=web_config["port"],
+            title=web_config["title"],
+        )
         self.pv_regulator = PvRegulator(self.pv_config)
         self.home_assistant_discovery = HomeAssistantDiscovery(self.home_assistant_config, self.base_topic)
 
@@ -91,6 +100,8 @@ class ChargerRuntime:
 
         self.controller: JuiceBoosterControl | None = None
         self.client: Any | None = None
+        self.web_server: WebDashboardServer | None = None
+        self._state_lock = threading.RLock()
 
     def on_connect(self, client: Any, userdata: Any, flags: Any, rc: Any, properties: Any = None) -> None:
         if not self._is_success_rc(rc):
@@ -127,34 +138,19 @@ class ChargerRuntime:
             if parsed_enable is None:
                 self.logger.warning("Ungueltiger Enable-Wert empfangen: %s", payload)
                 return
-            self.evcc_enabled = parsed_enable
-            self.mode = "instant" if parsed_enable else "off"
-            self.logger.info("Legacy EVCC Command: Modus %s.", self.mode)
+            self.set_mode("instant" if parsed_enable else "off", source="legacy")
             if not parsed_enable and self.controller:
                 self.controller.play_melody("stop_charging")
-            self._publish_static_state()
             return
 
         if msg.topic == self.topic_mode_set:
-            requested_mode = payload.lower()
-            if requested_mode not in VALID_MODES:
+            if not self.set_mode(payload, source="mqtt"):
                 self.logger.warning("Ungueltiger Modus empfangen: %s", payload)
-                return
-            self.mode = requested_mode
-            self.evcc_enabled = self.mode != "off"
-            self.logger.info("Modus auf %s gesetzt.", self.mode)
-            self._publish_static_state()
             return
 
         if msg.topic in {self.topic_max_current_set, self.topic_instant_current_set}:
-            current = self._parse_current(payload)
-            if current is None:
+            if not self.set_instant_current(payload, source="mqtt"):
                 self.logger.warning("Ungueltiger Wert fuer Ladestrom empfangen: %s", payload)
-                return
-            self.instant_current = current
-            self.evcc_target_current = current
-            self.logger.info("Sofortladestrom auf %sA gesetzt.", self.instant_current)
-            self._publish_static_state()
             return
 
         if msg.topic == self.topic_grid_power:
@@ -181,6 +177,7 @@ class ChargerRuntime:
             self.client.on_message = self.on_message
             self.client.connect(self.mqtt_broker_host, self.mqtt_broker_port, 60)
             self.client.loop_start()
+            self._start_web_server()
 
             self.logger.info("Steuerung gestartet. Hauptschleife beginnt.")
             self._run_main_loop()
@@ -198,6 +195,80 @@ class ChargerRuntime:
         import paho.mqtt.client as mqtt
 
         return mqtt.Client(client_id=self.mqtt_client_id)
+
+    def set_mode(self, requested_mode: str, source: str = "api") -> bool:
+        mode = str(requested_mode).strip().lower()
+        if mode not in VALID_MODES:
+            return False
+        with self._state_lock:
+            self.mode = mode
+            self.evcc_enabled = mode != "off"
+            if mode != "pv":
+                self.pv_regulator.reset()
+        self.logger.info("Modus auf %s gesetzt (%s).", mode, source)
+        self._publish_static_state()
+        return True
+
+    def set_instant_current(self, requested_current: Any, source: str = "api") -> bool:
+        current = self._parse_current(requested_current)
+        if current is None:
+            return False
+        current = min(32.0, current)
+        with self._state_lock:
+            self.instant_current = current
+            self.evcc_target_current = current
+        self.logger.info("Sofortladestrom auf %sA gesetzt (%s).", current, source)
+        self._publish_static_state()
+        return True
+
+    def get_web_state(self) -> dict[str, Any]:
+        with self._state_lock:
+            state = dict(self.last_status or self._default_state())
+            state["mode"] = self.mode
+            state["instant_current_A"] = self.instant_current
+            state["grid_power_w"] = self.pv_regulator.grid_power_w
+            state["web"] = {
+                "enabled": self.web_config.enabled,
+                "host": self.web_config.host,
+                "port": self.web_config.port,
+            }
+            state["topics"] = {
+                "state": self.topic_state,
+                "mode_set": self.topic_mode_set,
+                "instant_current_set": self.topic_instant_current_set,
+                "grid_power": self.topic_grid_power,
+            }
+            state["pv_settings"] = {
+                "voltage": self.pv_config.voltage,
+                "phases": self.pv_config.phases,
+                "min_current": self.pv_config.min_current,
+                "reserve_w": self.pv_config.reserve_w,
+                "start_delay_seconds": self.pv_config.start_delay_seconds,
+                "stop_delay_seconds": self.pv_config.stop_delay_seconds,
+                "input_timeout_seconds": self.pv_config.input_timeout_seconds,
+            }
+            return state
+
+    def _default_state(self) -> dict[str, Any]:
+        return {
+            "mode": self.mode,
+            "effective_mode": self.mode,
+            "cp_state": "unknown",
+            "vehicle_connected": False,
+            "is_charging": False,
+            "hardware_override_free_charge": False,
+            "grid_power_w": self.pv_regulator.grid_power_w,
+            "pv_surplus_w": None,
+            "target_current_A": 0.0,
+            "effective_current_A": self.last_effective_current,
+            "instant_current_A": self.instant_current,
+            "hw_max_current": None,
+            "rlc_percentage": None,
+            "rlc_limited_current_A": None,
+            "limit_reason": "not_started",
+            "pv_input_stale": self.pv_regulator.grid_power_w is None,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
 
     def _run_main_loop(self) -> None:
         while True:
@@ -241,9 +312,10 @@ class ChargerRuntime:
         )
         self._publish_status(state)
 
-        self.was_charging = is_charging
-        self.last_effective_current = effective_current
-        self.last_status = state
+        with self._state_lock:
+            self.was_charging = is_charging
+            self.last_effective_current = effective_current
+            self.last_status = state
         return state
 
     def _resolve_requested_current(
@@ -384,7 +456,18 @@ class ChargerRuntime:
             return
         self.home_assistant_discovery.publish(target_client)
 
+    def _start_web_server(self) -> None:
+        if not self.web_config.enabled:
+            return
+        self.web_server = WebDashboardServer(self, self.web_config, self.logger)
+        self.web_server.start()
+
     def _cleanup(self) -> None:
+        if self.web_server:
+            try:
+                self.web_server.stop()
+            except Exception:
+                self.logger.exception("Fehler beim Stoppen der Webansicht")
         if self.client:
             try:
                 self.client.publish(self.topic_availability, "offline", retain=True)
@@ -408,10 +491,10 @@ class ChargerRuntime:
         return None
 
     @staticmethod
-    def _parse_current(payload: str) -> float | None:
+    def _parse_current(payload: Any) -> float | None:
         try:
             return max(0.0, float(payload))
-        except ValueError:
+        except (TypeError, ValueError):
             return None
 
     @staticmethod

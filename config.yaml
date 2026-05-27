@@ -84,3 +84,10 @@ pv:
   start_delay_seconds: 60
   stop_delay_seconds: 180
   input_timeout_seconds: 60
+
+# Local web dashboard.
+web:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8080
+  title: "Juice Charger Easy"
