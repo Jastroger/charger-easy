@@ -1,209 +1,235 @@
-# /opt/juice-charger/mqtt_client.py
-import paho.mqtt.client as mqtt
-import time
 import json
 import logging
-from logging.handlers import RotatingFileHandler
-import yaml
 import sys
+import time
+from logging.handlers import RotatingFileHandler
+
+import paho.mqtt.client as mqtt
+import yaml
 
 from juice_booster_control import JuiceBoosterControl
 
-# --- Konfigurationsdatei laden ---
 CONFIG_PATH = "/opt/juice-charger/config.yaml"
 
-try:
-    with open(CONFIG_PATH, 'r') as f:
-        config = yaml.safe_load(f)
-except FileNotFoundError:
-    print(f"Fehler: Konfigurationsdatei '{CONFIG_PATH}' nicht gefunden. Bitte erstellen Sie sie.", file=sys.stderr)
-    sys.exit(1)
-except yaml.YAMLError as e:
-    print(f"Fehler beim Parsen der Konfigurationsdatei '{CONFIG_PATH}': {e}", file=sys.stderr)
-    sys.exit(1)
 
-# --- Logging Konfiguration (aus der config.yaml) ---
-log_level_str = config['logging'].get('level', 'INFO').upper()
-log_level = getattr(logging, log_level_str, logging.INFO)
-
-log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler = RotatingFileHandler(config['logging']['file_path'], maxBytes=10*1024*1024, backupCount=5)
-file_handler.setFormatter(log_formatter)
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(log_formatter)
-
-logger = logging.getLogger('mqtt_client_logger')
-logger.setLevel(log_level)
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-# --- MQTT Konfiguration (aus der config.yaml) ---
-MQTT_BROKER_HOST = config['mqtt']['broker_host']
-MQTT_BROKER_PORT = config['mqtt']['broker_port']
-MQTT_CLIENT_ID = config['mqtt']['client_id']
-MQTT_USERNAME = config['mqtt'].get('username')
-MQTT_PASSWORD = config['mqtt'].get('password')
-BASE_TOPIC = config['mqtt']['base_topic']
-
-# --- EVCC-kompatible MQTT Topics ---
-TOPIC_ENABLE_SET = f"{BASE_TOPIC}/enable/set"
-TOPIC_MAX_CURRENT_SET = f"{BASE_TOPIC}/maxCurrent/set"
-TOPIC_STATUS_GET = f"{BASE_TOPIC}/status"
-TOPIC_ENABLED_GET = f"{BASE_TOPIC}/enabled"
-TOPIC_CHARGE_CURRENT_GET = f"{BASE_TOPIC}/chargeCurrent"
-TOPIC_DEBUG_STATUS = f"{BASE_TOPIC}/debug/status"
-
-# --- RLC Percentages (aus der config.yaml) ---
-RLC_PERCENTAGES_FROM_CONFIG = config.get('rlc_percentages', {})
-
-# --- Buzzer Konfiguration (aus der config.yaml) ---
-BUZZER_CONFIG = config.get('buzzer', {'enabled': False, 'melodies': {}})
-
-# --- LED Konfiguration (aus der config.yaml) ---
-LED_ENABLED = config.get('leds', {}).get('enabled', False)
-
-
-# --- Globale Zustandsvariablen ---
-controller = None
-client = None
-evcc_enabled = False             
-evcc_target_current = 6          
-was_charging = False             
-last_cp_state = None
-
-
-# --- MQTT Callbacks ---
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        logger.info("Erfolgreich mit MQTT-Broker verbunden.")
-        client.subscribe([(TOPIC_ENABLE_SET, 0), (TOPIC_MAX_CURRENT_SET, 0)])
-        logger.info(f"Abonniert auf: {TOPIC_ENABLE_SET}, {TOPIC_MAX_CURRENT_SET}")
-    else:
-        logger.error(f"Verbindung fehlgeschlagen mit Code: {rc}")
-
-def on_message(client, userdata, msg):
-    global evcc_enabled, evcc_target_current
-    payload = msg.payload.decode('utf-8')
-    logger.debug(f"MQTT-Nachricht empfangen: Topic='{msg.topic}', Payload='{payload}'")
-
-    if msg.topic == TOPIC_ENABLE_SET:
-        evcc_enabled = (payload.lower() == 'true')
-        logger.info(f"EVCC Command: Charger {'enabled' if evcc_enabled else 'disabled'}.")
-        if not evcc_enabled: # Wenn Ladegerät durch EVCC deaktiviert wird
-            controller.play_melody("stop_charging") 
-    elif msg.topic == TOPIC_MAX_CURRENT_SET:
-        try:
-            evcc_target_current = int(float(payload))
-            logger.info(f"EVCC Command: Target current set to {evcc_target_current}A.")
-        except ValueError:
-            logger.warning(f"Ungueltiger Wert fuer Ladestrom empfangen: {payload}")
-
-# --- Hauptprogramm ---
-def main():
-    global was_charging, controller, client, last_cp_state
-    
+def load_config(config_path: str) -> dict:
     try:
-        # Controller mit RLC-Prozentsaetzen und Buzzer-Konfiguration initialisieren
-        controller = JuiceBoosterControl(
-            rlc_percentages_from_config=RLC_PERCENTAGES_FROM_CONFIG,
-            buzzer_config=BUZZER_CONFIG, led_enabled=LED_ENABLED
-            ) 
-        
-        client = mqtt.Client(client_id=MQTT_CLIENT_ID)
-        if MQTT_USERNAME and MQTT_PASSWORD:
-            client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-        client.on_connect = on_connect
-        client.on_message = on_message
-        
-        client.connect(MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60)
-        client.loop_start()
-        
-        logger.info("Steuerung gestartet. Hauptschleife beginnt.")
-        
+        with open(config_path, "r", encoding="utf-8") as config_file:
+            return yaml.safe_load(config_file)
+    except FileNotFoundError:
+        print(f"Fehler: Konfigurationsdatei '{config_path}' nicht gefunden.", file=sys.stderr)
+        sys.exit(1)
+    except yaml.YAMLError as error:
+        print(f"Fehler beim Parsen der Konfigurationsdatei '{config_path}': {error}", file=sys.stderr)
+        sys.exit(1)
+
+
+def configure_logger(config: dict) -> logging.Logger:
+    log_level_str = config["logging"].get("level", "INFO").upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+
+    logger = logging.getLogger("mqtt_client_logger")
+    logger.setLevel(log_level)
+    logger.handlers.clear()
+
+    log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    file_handler = RotatingFileHandler(config["logging"]["file_path"], maxBytes=10 * 1024 * 1024, backupCount=5)
+    file_handler.setFormatter(log_formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    return logger
+
+
+class ChargerRuntime:
+    def __init__(self, config: dict, logger: logging.Logger) -> None:
+        self.config = config
+        self.logger = logger
+
+        mqtt_config = config["mqtt"]
+        self.mqtt_broker_host = mqtt_config["broker_host"]
+        self.mqtt_broker_port = mqtt_config["broker_port"]
+        self.mqtt_client_id = mqtt_config["client_id"]
+        self.mqtt_username = mqtt_config.get("username")
+        self.mqtt_password = mqtt_config.get("password")
+        self.base_topic = mqtt_config["base_topic"]
+
+        self.topic_enable_set = f"{self.base_topic}/enable/set"
+        self.topic_max_current_set = f"{self.base_topic}/maxCurrent/set"
+        self.topic_status_get = f"{self.base_topic}/status"
+        self.topic_enabled_get = f"{self.base_topic}/enabled"
+        self.topic_charge_current_get = f"{self.base_topic}/chargeCurrent"
+        self.topic_debug_status = f"{self.base_topic}/debug/status"
+
+        self.rlc_percentages = config.get("rlc_percentages", {})
+        self.buzzer_config = config.get("buzzer", {"enabled": False, "melodies": {}})
+        self.led_enabled = config.get("leds", {}).get("enabled", False)
+
+        self.evcc_enabled = False
+        self.evcc_target_current = 6
+        self.was_charging = False
+        self.last_cp_state = None
+
+        self.controller = None
+        self.client = None
+
+    def on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            self.logger.info("Erfolgreich mit MQTT-Broker verbunden.")
+            client.subscribe([(self.topic_enable_set, 0), (self.topic_max_current_set, 0)])
+            self.logger.info("Abonniert auf: %s, %s", self.topic_enable_set, self.topic_max_current_set)
+            return
+        self.logger.error("MQTT-Verbindung fehlgeschlagen mit Code: %s", rc)
+
+    def on_message(self, client, userdata, msg):
+        payload = msg.payload.decode("utf-8")
+        self.logger.debug("MQTT-Nachricht empfangen: Topic='%s', Payload='%s'", msg.topic, payload)
+
+        if msg.topic == self.topic_enable_set:
+            self.evcc_enabled = payload.lower() == "true"
+            self.logger.info("EVCC Command: Charger %s.", "enabled" if self.evcc_enabled else "disabled")
+            if not self.evcc_enabled:
+                self.controller.play_melody("stop_charging")
+            return
+
+        if msg.topic == self.topic_max_current_set:
+            try:
+                self.evcc_target_current = int(float(payload))
+                self.logger.info("EVCC Command: Target current set to %sA.", self.evcc_target_current)
+            except ValueError:
+                self.logger.warning("Ungueltiger Wert fuer Ladestrom empfangen: %s", payload)
+
+    def run(self) -> None:
+        try:
+            self.controller = JuiceBoosterControl(
+                rlc_percentages_from_config=self.rlc_percentages,
+                buzzer_config=self.buzzer_config,
+                led_enabled=self.led_enabled,
+            )
+
+            self.client = mqtt.Client(client_id=self.mqtt_client_id)
+            if self.mqtt_username and self.mqtt_password:
+                self.client.username_pw_set(self.mqtt_username, self.mqtt_password)
+
+            self.client.on_connect = self.on_connect
+            self.client.on_message = self.on_message
+            self.client.connect(self.mqtt_broker_host, self.mqtt_broker_port, 60)
+            self.client.loop_start()
+
+            self.logger.info("Steuerung gestartet. Hauptschleife beginnt.")
+            self._run_main_loop()
+        except KeyboardInterrupt:
+            self.logger.info("Programm wird durch Benutzer beendet.")
+        except Exception:
+            self.logger.exception("Ein unerwarteter Fehler ist aufgetreten")
+        finally:
+            self._cleanup()
+
+    def _run_main_loop(self) -> None:
         while True:
-            free_charge_mode = controller.is_free_charging_enabled()
-            cp_state = controller.get_cp_state()
-            max_hw_current = controller.get_max_hardware_current()
-            is_connected = (cp_state in ['B', 'C'])
+            free_charge_mode = self.controller.is_free_charging_enabled()
+            cp_state = self.controller.get_cp_state()
+            max_hw_current = self.controller.get_max_hardware_current()
+            is_connected = cp_state in ["B", "C"]
 
-            # LEDs aktualisieren, wenn aktiviert
-            if LED_ENABLED:
-                controller.led()
+            self.controller.led()
+            self._handle_cp_state_change(cp_state)
+
+            requested_current = self._resolve_requested_current(free_charge_mode, is_connected, max_hw_current)
+            effective_current = self.controller.set_charge_current(requested_current)
+            is_charging = effective_current > 0 and cp_state == "C"
+
+            self._handle_charging_transition(is_charging)
+            self._publish_status(cp_state, effective_current, is_charging, free_charge_mode, max_hw_current)
+
+            self.was_charging = is_charging
+            time.sleep(2)
+
+    def _resolve_requested_current(self, free_charge_mode: bool, is_connected: bool, max_hw_current: int) -> float:
+        if free_charge_mode and is_connected:
+            return float(max_hw_current)
+        if self.evcc_enabled and is_connected:
+            return float(self.evcc_target_current)
+        return 0.0
+
+    def _handle_cp_state_change(self, cp_state: str) -> None:
+        if cp_state == self.last_cp_state:
+            return
+
+        if cp_state in ["B", "C"] and self.last_cp_state not in ["B", "C"]:
+            self.logger.info("Fahrzeug verbunden (CP-State Wechsel von %s zu %s).", self.last_cp_state, cp_state)
+            self.controller.play_melody("car_connected")
+        elif cp_state == "A" and self.last_cp_state in ["B", "C"]:
+            self.logger.info("Fahrzeug getrennt (CP-State Wechsel von %s zu %s).", self.last_cp_state, cp_state)
+            self.controller.play_melody("stop_charging")
+
+        self.last_cp_state = cp_state
+
+    def _handle_charging_transition(self, is_charging: bool) -> None:
+        if is_charging and not self.was_charging:
+            self.logger.info("Ladevorgang startet. Spiele Melodie 'start_charging'.")
+            self.controller.play_melody("start_charging")
+            return
+
+        if not is_charging and self.was_charging:
+            self.logger.info("Ladevorgang beendet. Spiele Melodie 'stop_charging'.")
+            self.controller.play_melody("stop_charging")
+
+    def _publish_status(
+        self,
+        cp_state: str,
+        effective_current: float,
+        is_charging: bool,
+        free_charge_mode: bool,
+        max_hw_current: int,
+    ) -> None:
+        mode_status = "FreeCharge Mode" if free_charge_mode else "EVCC Control"
+
+        self.client.publish(self.topic_status_get, cp_state, retain=True)
+        self.client.publish(self.topic_enabled_get, "true" if effective_current > 0 else "false", retain=True)
+        self.client.publish(self.topic_charge_current_get, str(effective_current), retain=True)
+
+        debug_payload = {
+            "cp_state": cp_state,
+            "mode_active": mode_status,
+            "evcc_cmd_enabled": self.evcc_enabled,
+            "evcc_target_current_cmd": self.evcc_target_current,
+            "hw_max_current": max_hw_current,
+            "rlc_percentage": self.controller.get_rlc_percentage(),
+            "effective_current_A": effective_current,
+            "is_charging": is_charging,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+        self.client.publish(self.topic_debug_status, json.dumps(debug_payload), retain=True)
+
+        self.logger.info(
+            "Status: Mode=%s, CP=%s, HW-Max=%sA, RLC=%s%%, EVCC-Target=%sA, Effektiv=%.1fA",
+            mode_status,
+            cp_state,
+            max_hw_current,
+            self.controller.get_rlc_percentage(),
+            self.evcc_target_current,
+            effective_current,
+        )
+
+    def _cleanup(self) -> None:
+        if self.client and self.client.is_connected():
+            self.client.loop_stop()
+            self.client.disconnect()
+        if self.controller:
+            self.controller.cleanup()
+        self.logger.info("Aufgeraeumt und beendet.")
 
 
-            # Erkennung von CP-Status-Änderungen für Melodien
-            if cp_state != last_cp_state:
-                if cp_state in ['B', 'C'] and last_cp_state not in ['B', 'C']:
-                    logger.info(f"Fahrzeug verbunden (CP-State Wechsel von {last_cp_state} zu {cp_state}).")
-                    controller.play_melody("car_connected")
-                elif cp_state == 'A' and last_cp_state in ['B', 'C']:
-                    logger.info(f"Fahrzeug getrennt (CP-State Wechsel von {last_cp_state} zu {cp_state}).")
-                    controller.play_melody("stop_charging") # Oder andere Melodie bei Trennung
-                last_cp_state = cp_state # Letzten Status aktualisieren
+def main() -> None:
+    config = load_config(CONFIG_PATH)
+    logger = configure_logger(config)
+    runtime = ChargerRuntime(config=config, logger=logger)
+    runtime.run()
 
-            requested_current_by_logic = 0
-            mode_status = ""
-            
-            # --- Priorisierung der Lademodi (nur FreeCharge und EVCC) ---
-            if free_charge_mode: 
-                mode_status = "FreeCharge Mode"
-                if is_connected:
-                    requested_current_by_logic = max_hw_current
-            else: 
-                mode_status = "EVCC Control"
-                if evcc_enabled and is_connected:
-                    requested_current_by_logic = evcc_target_current
-                else: 
-                    requested_current_by_logic = 0
-            
-            effective_current = controller.set_charge_current(requested_current_by_logic)
-            
-            # Ladezustand ermitteln (wenn wirklich Strom fließt und CP='C')
-            is_charging = (effective_current > 0 and cp_state == 'C')
-            
-            # Melodie beim tatsächlichen Start/Stopp des Ladevorgangs
-            if is_charging and not was_charging:
-                logger.info("Ladevorgang startet. Spiele Melodie 'start_charging'.")
-                controller.play_melody("start_charging")
-            elif not is_charging and was_charging:
-                logger.info("Ladevorgang beendet. Spiele Melodie 'stop_charging'.")
-                controller.play_melody("stop_charging")
 
-            was_charging = is_charging
-            
-            # Status an MQTT publizieren (für EVCC und andere)
-            client.publish(TOPIC_STATUS_GET, cp_state, retain=True)
-            client.publish(TOPIC_ENABLED_GET, "true" if effective_current > 0 else "false", retain=True)
-            client.publish(TOPIC_CHARGE_CURRENT_GET, str(effective_current), retain=True)
-
-            # Debug-Status publizieren (mit allen relevanten Werten)
-            debug_payload = {
-                "cp_state": cp_state,
-                "mode_active": mode_status,
-                "evcc_cmd_enabled": evcc_enabled,
-                "evcc_target_current_cmd": evcc_target_current,
-                "hw_max_current": max_hw_current,
-                "rlc_percentage": controller.get_rlc_percentage(), 
-                "effective_current_A": effective_current,
-                "is_charging": is_charging,
-                "timestamp": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-            }
-            client.publish(TOPIC_DEBUG_STATUS, json.dumps(debug_payload), retain=True)
-            logger.info(f"Status: Mode={mode_status}, CP={cp_state}, HW-Max={max_hw_current}A, RLC={controller.get_rlc_percentage()}%, EVCC-Target={evcc_target_current}A, Effektiv={effective_current:.1f}A")
-
-            time.sleep(2) 
-
-    except KeyboardInterrupt:
-        logger.info("\nProgramm wird durch Benutzer beendet.")
-    except Exception as e:
-        logger.error(f"Ein unerwarteter Fehler ist aufgetreten: {e}", exc_info=True)
-    finally:
-        if client and client.is_connected():
-            client.loop_stop()
-            client.disconnect()
-        if controller:
-            controller.cleanup()
-        logger.info("Aufgeraeumt und beendet.")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
