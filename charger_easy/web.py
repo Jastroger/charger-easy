@@ -311,6 +311,33 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       font-size: 17px;
       font-weight: 950;
     }
+    .status-rail {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+      align-content: start;
+    }
+    .override-notice {
+      width: min(270px, 100%);
+      padding: 11px 13px;
+      border-radius: 8px;
+      border: 1px solid rgba(244, 189, 80, 0.42);
+      background: rgba(244, 189, 80, 0.13);
+      color: #f6d78a;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+    .override-notice[hidden] {
+      display: none;
+    }
+    .override-notice strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--yellow);
+      font-size: 14px;
+      line-height: 1.2;
+    }
     .visual {
       display: grid;
       grid-template-columns: minmax(300px, 0.76fr) minmax(400px, 1.24fr);
@@ -698,7 +725,8 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       .kiosk { padding: 8px; }
       .screen-inner { min-height: calc(100vh - 34px); padding: 14px; }
       .topbar, .headline { grid-template-columns: 1fr; }
-      .status-chip, .mode-badge { justify-self: start; }
+      .status-chip, .mode-badge, .status-rail { justify-self: start; }
+      .status-rail { justify-items: start; }
       .facts, .data-grid { grid-template-columns: 1fr; }
       .stage-panel { padding: 14px; }
       .control-panel { padding: 14px; }
@@ -729,7 +757,13 @@ DASHBOARD_TEMPLATE = """<!doctype html>
                   <h2 id="statusTitle" class="status-title">Bereit zum Laden</h2>
                   <p id="statusCopy" class="status-copy">Die Ladesäule wartet auf den aktuellen Status.</p>
                 </div>
-                <div id="modeBadge" class="mode-badge">--</div>
+                <div class="status-rail">
+                  <div id="modeBadge" class="mode-badge">--</div>
+                  <div id="hardwareOverrideNotice" class="override-notice" hidden>
+                    <strong>Hardware-FreeCharge aktiv</strong>
+                    <span>Der physische Schalter kann die Softwarevorgabe übersteuern.</span>
+                  </div>
+                </div>
               </div>
 
               <div class="visual">
@@ -844,8 +878,8 @@ DASHBOARD_TEMPLATE = """<!doctype html>
 
     const MODE_LABELS = {
       off: "Pausiert",
-      pv: "PV-Laden",
-      instant: "Sofortladen",
+      pv: "PV-Überschuss",
+      instant: "Sofort laden",
       hardware_override_free_charge: "FreeCharge"
     };
 
@@ -896,8 +930,23 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       error.style.display = message ? "block" : "none";
     }
 
+    function selectedModeTitle(state) {
+      if (state.mode === "off") return "Laden pausiert";
+      if (state.mode === "pv") return "PV-Überschuss gewählt";
+      if (state.mode === "instant") return "Sofort laden gewählt";
+      return "Bereit zum Laden";
+    }
+
+    function selectedModeCopy(state) {
+      if (state.mode === "off") return "Der Softwaremodus ist pausiert. Hardware-FreeCharge wird separat angezeigt.";
+      if (state.mode === "pv" && state.pv_input_stale) return "PV-Überschuss ist ausgewählt; Home Assistant liefert gerade keine aktuellen Netzdaten.";
+      if (state.mode === "pv") return "PV-Überschuss ist ausgewählt. Solarwerte und Zielstrom bleiben sichtbar.";
+      if (state.mode === "instant") return "Sofortladen ist ausgewählt. Der eingestellte Strom bleibt sichtbar.";
+      return "Wählen Sie PV-Überschuss oder Sofortladen.";
+    }
+
     function customerTitle(state) {
-      if (state.hardware_override_free_charge) return "FreeCharge ist aktiv";
+      if (state.hardware_override_free_charge) return selectedModeTitle(state);
       if (!state.vehicle_connected) return "Fahrzeug anschließen";
       if (state.is_charging && state.mode === "pv") return "Lädt mit Solarstrom";
       if (state.is_charging) return "Ihr Fahrzeug lädt";
@@ -908,7 +957,7 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     }
 
     function customerCopy(state) {
-      if (state.hardware_override_free_charge) return "Der physische Schalter gibt das Laden direkt frei.";
+      if (state.hardware_override_free_charge) return selectedModeCopy(state);
       if (!state.vehicle_connected) return "Stecker einstecken. Danach übernimmt der gewählte Lademodus.";
       if (state.is_charging && state.mode === "pv") return "Solar-Überschuss wird in Ladestrom umgesetzt. Netzbezug bleibt begrenzt.";
       if (state.is_charging) return "Der Charger gibt aktuell Strom frei. Alle Hardware-Limits bleiben aktiv.";
@@ -988,11 +1037,12 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     function updateUi(state) {
       const charging = Boolean(state.is_charging);
       const stale = Boolean(state.pv_input_stale);
-      const mode = state.effective_mode || state.mode;
+      const selectedMode = state.mode || state.effective_mode;
       const percent = meterPercent(state);
       const current = numberOrNull(state.effective_current_A);
       const surplus = numberOrNull(state.pv_surplus_w);
       const grid = numberOrNull(state.grid_power_w);
+      const hardwareOverride = Boolean(state.hardware_override_free_charge);
 
       $("liveDot").className = "dot " + (charging ? "on" : stale ? "warn" : "");
       $("liveText").textContent = charging ? "Lädt" : stale ? "PV-Daten fehlen" : "Bereit";
@@ -1000,7 +1050,8 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       $("statusCopy").textContent = customerCopy(state);
       $("effectiveCurrent").textContent = fmtAmp(current);
       $("currentSubline").textContent = label(REASON_LABELS, state.limit_reason);
-      $("modeBadge").textContent = label(MODE_LABELS, mode);
+      $("modeBadge").textContent = label(MODE_LABELS, selectedMode);
+      $("hardwareOverrideNotice").hidden = !hardwareOverride;
       $("vehicle").textContent = state.vehicle_connected ? "Verbunden" : "Nicht verbunden";
       $("targetCurrent").textContent = fmtAmp(state.target_current_A);
       $("pvStatus").textContent = pvLabel(state);
