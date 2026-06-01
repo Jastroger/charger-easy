@@ -6,6 +6,10 @@ through GPIO and an MCP41xxx digital potentiometer, integrates with MQTT and
 Home Assistant, and provides a local web dashboard for commissioning and daily
 operation.
 
+This repository is a fork of
+[`Andreas1312/charger-easy`](https://github.com/Andreas1312/charger-easy).
+Credit to **Andreas1312** as the original developer of this project.
+
 The main use case is PV surplus charging: Home Assistant publishes the current
 grid import/export power to MQTT, the service calculates the available surplus,
 and the Raspberry Pi requests the matching charging current.
@@ -579,9 +583,11 @@ Expected CP behavior:
 
 - CP state `A`: no vehicle connected
 - CP state `B`: vehicle connected
-- CP state `C`: charging
+- CP state `C`: vehicle connected and charging enabled/requested
 
 The dashboard should show `vehicle_connected: true` for CP state `B` or `C`.
+If you encounter the term `verbunde` in existing labels, it means
+`verbunden` (connected) and refers to this same vehicle connection state.
 
 ### Step 7: Charging Current Follows Surplus
 
