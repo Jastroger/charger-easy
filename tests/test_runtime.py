@@ -170,10 +170,70 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(state["target_current_A"], 12)
         self.assertEqual(state["effective_current_A"], 8.0)
         self.assertEqual(state["limit_reason"], "rlc_limit")
+        self.assertEqual(state["pv_surplus_w"], 2900.0)
 
         state_payloads = [payload for topic, payload, _ in runtime.client.published if topic == runtime.topic_state]
         self.assertTrue(state_payloads)
         self.assertIn('"hardware_override_free_charge": false', state_payloads[-1])
+
+    def test_no_vehicle_keeps_current_zero_but_reports_pv_surplus(self) -> None:
+        runtime = self.build_runtime(
+            {
+                "pv": {
+                    "grid_power_export_negative": True,
+                    "reserve_w": 100,
+                    "voltage": 230,
+                    "phases": 1,
+                    "start_delay_seconds": 0,
+                }
+            }
+        )
+        controller = FakeController()
+        controller.cp_state = "A"
+        runtime.controller = controller
+        runtime.client = FakeClient()
+        runtime.mode = "pv"
+        runtime.on_message(None, None, self.msg(runtime.topic_grid_power, "-2000"))
+
+        state = runtime._run_once()
+
+        self.assertEqual(state["effective_current_A"], 0.0)
+        self.assertEqual(state["target_current_A"], 0.0)
+        self.assertEqual(state["limit_reason"], "vehicle_not_connected")
+        self.assertEqual(state["pv_surplus_w"], 1900.0)
+        self.assertEqual(controller.currents, [0.0])
+
+    def test_no_vehicle_reports_missing_pv_input_without_charging(self) -> None:
+        runtime = self.build_runtime()
+        controller = FakeController()
+        controller.cp_state = "A"
+        runtime.controller = controller
+        runtime.client = FakeClient()
+        runtime.mode = "pv"
+
+        state = runtime._run_once()
+
+        self.assertEqual(state["effective_current_A"], 0.0)
+        self.assertEqual(state["target_current_A"], 0.0)
+        self.assertEqual(state["limit_reason"], "vehicle_not_connected")
+        self.assertTrue(state["pv_input_stale"])
+
+    def test_no_vehicle_reports_stale_pv_input_without_charging(self) -> None:
+        runtime = self.build_runtime({"pv": {"input_timeout_seconds": 10}}, now=0)
+        controller = FakeController()
+        controller.cp_state = "A"
+        runtime.controller = controller
+        runtime.client = FakeClient()
+        runtime.mode = "pv"
+        runtime.on_message(None, None, self.msg(runtime.topic_grid_power, "-2000"))
+        runtime.test_time["now"] = 11
+
+        state = runtime._run_once()
+
+        self.assertEqual(state["effective_current_A"], 0.0)
+        self.assertEqual(state["target_current_A"], 0.0)
+        self.assertEqual(state["limit_reason"], "vehicle_not_connected")
+        self.assertTrue(state["pv_input_stale"])
 
     def test_free_charge_dip_overrides_software_mode(self) -> None:
         runtime = self.build_runtime()

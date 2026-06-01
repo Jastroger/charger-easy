@@ -325,8 +325,11 @@ class ChargerRuntime:
         max_hw_current: int,
     ) -> tuple[float, str, PvDecision | None]:
         if not is_connected:
-            self.pv_regulator.reset()
-            return 0.0, "vehicle_not_connected", None
+            pv_decision = self.pv_regulator.decide(
+                self.time_fn(),
+                current_charging_current=self.last_effective_current,
+            )
+            return 0.0, "vehicle_not_connected", pv_decision
 
         if free_charge_mode:
             self.pv_regulator.reset()
