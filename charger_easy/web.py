@@ -139,32 +139,32 @@ DASHBOARD_TEMPLATE = """<!doctype html>
   <title>__TITLE__</title>
   <style>
     :root {
-      color-scheme: light;
-      --page: #dfe5e8;
-      --screen: #11181d;
-      --screen-soft: #16242b;
-      --surface: #f4f7f7;
-      --surface-strong: #ffffff;
+      color-scheme: dark;
+      --page: #071014;
+      --screen: #0b1216;
+      --screen-soft: #101b20;
+      --surface: #132126;
+      --surface-strong: #182a31;
       --ink: #f7fbfb;
       --ink-dark: #0f171b;
       --muted: #8ba0a7;
-      --muted-dark: #607178;
-      --line: rgba(255, 255, 255, 0.12);
-      --line-dark: #cfd9dd;
+      --muted-dark: #9aaeb5;
+      --line: rgba(255, 255, 255, 0.11);
+      --line-dark: rgba(255, 255, 255, 0.16);
       --green: #20d49b;
       --green-dark: #0e8c67;
+      --cyan: #65c7ef;
       --blue: #2c6ee8;
       --yellow: #f4bd50;
       --red: #e45b5b;
-      --shadow: 0 22px 52px rgba(8, 14, 18, 0.26);
+      --shadow: 0 24px 54px rgba(0, 0, 0, 0.34);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        linear-gradient(180deg, #f6f8f9 0, var(--page) 58%, #cfd8dc 100%);
+      background: linear-gradient(180deg, #10191e 0, var(--page) 100%);
       color: var(--ink);
       -webkit-tap-highlight-color: transparent;
     }
@@ -174,20 +174,20 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       -webkit-user-select: text;
     }
     main {
-      width: min(1240px, calc(100% - 28px));
+      width: min(1320px, calc(100% - 24px));
       margin: 0 auto;
-      padding: 18px 0 30px;
+      padding: 12px 0 22px;
     }
     .kiosk {
-      min-height: calc(100vh - 48px);
-      border: 1px solid rgba(10, 20, 24, 0.24);
+      min-height: calc(100vh - 34px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
-      background: #20272b;
+      background: #080f13;
       box-shadow: var(--shadow);
-      padding: 14px;
+      padding: 10px;
     }
     .screen {
-      min-height: calc(100vh - 78px);
+      min-height: calc(100vh - 56px);
       border-radius: 6px;
       background: var(--screen);
       overflow: hidden;
@@ -201,53 +201,54 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(90deg, rgba(255,255,255,0.04), transparent 18%, transparent 82%, rgba(255,255,255,0.035)),
-        linear-gradient(180deg, rgba(255,255,255,0.08), transparent 210px);
+        linear-gradient(90deg, rgba(255,255,255,0.035), transparent 24%, transparent 76%, rgba(255,255,255,0.03)),
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 170px);
     }
     .screen-inner {
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: calc(100vh - 78px);
-      padding: 22px;
-      gap: 16px;
+      grid-template-rows: auto 1fr;
+      min-height: calc(100vh - 56px);
+      padding: 16px;
+      gap: 12px;
     }
     .topbar {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 18px;
+      gap: 14px;
       align-items: center;
     }
     h1 {
       margin: 0;
-      font-size: clamp(30px, 4vw, 54px);
-      line-height: 0.95;
+      font-size: 29px;
+      line-height: 1;
       letter-spacing: 0;
     }
     .subline {
-      margin: 8px 0 0;
+      margin: 4px 0 0;
       color: var(--muted);
-      font-size: clamp(15px, 1.4vw, 19px);
+      font-size: 13px;
     }
     .status-chip {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 11px;
-      min-height: 48px;
-      min-width: 142px;
-      padding: 10px 15px;
+      gap: 9px;
+      min-height: 38px;
+      min-width: 120px;
+      padding: 8px 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.07);
       color: var(--ink);
+      font-size: 13px;
       font-weight: 900;
       white-space: nowrap;
     }
     .dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: var(--muted);
       box-shadow: 0 0 0 6px rgba(139, 160, 167, 0.18);
@@ -256,11 +257,12 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     .dot.warn { background: var(--yellow); box-shadow: 0 0 0 6px rgba(244, 189, 80, 0.18); }
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 326px;
-      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) 318px;
+      gap: 12px;
+      align-items: start;
       min-height: 0;
     }
-    .stage-panel, .control-panel, .data-card {
+    .stage-panel, .control-panel, .metric-card, .limits-panel, .diagram-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.055);
@@ -268,160 +270,132 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     }
     .stage-panel {
       display: grid;
-      grid-template-rows: auto minmax(310px, 1fr) auto;
-      gap: 16px;
+      grid-template-rows: auto auto auto;
+      align-content: start;
+      gap: 10px;
       min-width: 0;
-      padding: 20px;
+      padding: 14px;
     }
-    .headline {
+    .dashboard-head {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 16px;
-      align-items: start;
+      gap: 12px;
+      align-items: center;
     }
-    .eyebrow {
-      color: var(--green);
-      font-size: 13px;
-      font-weight: 950;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .eyebrow, .label {
+      color: #a8bac0;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: none;
+      letter-spacing: 0;
     }
     .status-title {
-      margin: 8px 0 0;
+      margin: 3px 0 0;
       color: var(--ink);
-      font-size: clamp(31px, 3.6vw, 50px);
-      line-height: 1.02;
+      font-size: 32px;
+      line-height: 1;
       letter-spacing: 0;
-    }
-    .status-copy {
-      margin: 10px 0 0;
-      max-width: 690px;
-      color: #b5c4c9;
-      font-size: clamp(16px, 1.6vw, 20px);
-      line-height: 1.38;
-    }
-    .mode-badge {
-      min-width: 140px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(32, 212, 155, 0.28);
-      background: rgba(32, 212, 155, 0.12);
-      color: var(--green);
-      text-align: center;
-      font-size: 17px;
-      font-weight: 950;
-    }
-    .status-rail {
-      display: grid;
-      gap: 10px;
-      justify-items: end;
-      align-content: start;
-    }
-    .override-notice {
-      width: min(270px, 100%);
-      padding: 11px 13px;
-      border-radius: 8px;
-      border: 1px solid rgba(244, 189, 80, 0.42);
-      background: rgba(244, 189, 80, 0.13);
-      color: #f6d78a;
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.3;
-    }
-    .override-notice[hidden] {
-      display: none;
-    }
-    .override-notice strong {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--yellow);
-      font-size: 14px;
-      line-height: 1.2;
-    }
-    .visual {
-      display: grid;
-      grid-template-columns: minmax(300px, 0.76fr) minmax(400px, 1.24fr);
-      gap: 16px;
-      align-items: stretch;
-      min-height: 0;
-    }
-    .readout {
-      display: grid;
-      align-content: center;
-      min-width: 0;
+      white-space: nowrap;
       overflow: hidden;
-      padding: 20px 18px;
-      border-radius: 8px;
-      background: var(--surface);
-      color: var(--ink-dark);
+      text-overflow: ellipsis;
     }
-    .readout-label {
-      color: var(--muted-dark);
-      font-size: 13px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .amp {
+    .status-badges {
       display: flex;
-      align-items: baseline;
+      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 8px;
-      margin-top: 16px;
-      min-width: 0;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line-dark);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 950;
       white-space: nowrap;
     }
-    .amp strong {
-      min-width: 0;
-      font-size: clamp(82px, 9.2vw, 126px);
-      line-height: 0.84;
-      letter-spacing: 0;
-      font-variant-numeric: tabular-nums;
+    .status-badge.accent {
+      border-color: rgba(32, 212, 155, 0.32);
+      background: rgba(32, 212, 155, 0.13);
+      color: var(--green);
     }
-    .amp span {
-      color: var(--muted-dark);
-      font-size: clamp(24px, 2.4vw, 36px);
-      font-weight: 950;
+    .status-badge.warning {
+      border-color: rgba(244, 189, 80, 0.45);
+      background: rgba(244, 189, 80, 0.14);
+      color: var(--yellow);
     }
-    .current-subline {
-      margin-top: 14px;
-      color: var(--muted-dark);
-      font-size: 18px;
-      line-height: 1.35;
+    .status-badge.warn {
+      border-color: rgba(244, 189, 80, 0.45);
+      color: var(--yellow);
     }
-    .charge-bar {
-      margin-top: 24px;
+    .status-badge[hidden] {
+      display: none;
     }
-    .bar-head {
-      display: flex;
-      justify-content: space-between;
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 10px;
-      color: var(--muted-dark);
-      font-size: 14px;
-      font-weight: 900;
-      margin-bottom: 10px;
     }
-    .track {
-      height: 18px;
+    .metric-card {
+      min-height: 94px;
+      min-width: 0;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.052));
+    }
+    .metric-card.primary {
+      border-color: rgba(32, 212, 155, 0.22);
+      background: linear-gradient(180deg, rgba(32, 212, 155, 0.13), rgba(255,255,255,0.045));
+    }
+    .metric-value {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      margin-top: 9px;
+      min-width: 0;
+      color: var(--ink);
+      font-size: 27px;
+      font-weight: 950;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
       overflow: hidden;
-      border-radius: 999px;
-      background: #d5dee2;
-      border: 1px solid #c6d0d5;
+      text-overflow: ellipsis;
     }
-    .fill {
-      width: 0%;
-      height: 100%;
-      border-radius: 999px;
-      background: var(--green-dark);
-      transition: width 240ms ease;
+    .metric-value.compact {
+      font-size: 22px;
+    }
+    .metric-unit {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .unit {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .value.good, .metric-value.good { color: var(--green); }
+    .value.warn, .metric-value.warn { color: var(--yellow); }
+    .operations-grid {
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) minmax(280px, 0.58fr);
+      gap: 10px;
+      align-items: start;
+      min-height: 0;
     }
     .diagram-card {
       position: relative;
-      min-height: 320px;
-      border-radius: 8px;
-      background: #e7edef;
-      color: var(--ink-dark);
+      height: 302px;
+      min-height: 0;
+      background: #101a1f;
+      color: var(--ink);
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.18);
       user-select: none;
       -webkit-user-select: none;
     }
@@ -429,50 +403,47 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1)),
-        repeating-linear-gradient(0deg, rgba(15, 23, 27, 0.04), rgba(15, 23, 27, 0.04) 1px, transparent 1px, transparent 38px),
-        repeating-linear-gradient(90deg, rgba(15, 23, 27, 0.035), rgba(15, 23, 27, 0.035) 1px, transparent 1px, transparent 38px);
+      background: linear-gradient(145deg, rgba(255,255,255,0.075), transparent 52%, rgba(32, 212, 155, 0.055));
     }
     .diagram {
       position: relative;
       z-index: 1;
       width: 100%;
-      height: 100%;
-      min-height: 320px;
+      height: 302px;
+      min-height: 0;
       display: block;
       pointer-events: none;
     }
     .svg-label {
       font: 800 15px Inter, system-ui, sans-serif;
-      fill: #24333a;
+      fill: #ecf6f5;
     }
     .svg-small {
       font: 700 12px Inter, system-ui, sans-serif;
-      fill: #6a7b82;
+      fill: #9fb0b6;
     }
     .svg-pill {
-      fill: rgba(255, 255, 255, 0.78);
-      stroke: #d6e0e4;
+      fill: rgba(255, 255, 255, 0.08);
+      stroke: rgba(255, 255, 255, 0.16);
       stroke-width: 1;
     }
     .flow-line {
       fill: none;
-      stroke: #8da0a8;
+      stroke: rgba(155, 174, 181, 0.55);
       stroke-width: 8;
       stroke-linecap: round;
       stroke-dasharray: 1 18;
     }
     .flow-line.active {
-      stroke: var(--green-dark);
+      stroke: var(--green);
       stroke-dasharray: 18 14;
       animation: flow 1.3s linear infinite;
     }
     .flow-line.grid-import.active { stroke: var(--yellow); }
-    .flow-line.paused { stroke: #9eaeb5; }
+    .flow-line.paused { stroke: rgba(155, 174, 181, 0.38); }
     .cable-base {
       fill: none;
-      stroke: #1b2b32;
+      stroke: rgba(236, 246, 245, 0.64);
       stroke-width: 9;
       stroke-linecap: round;
       stroke-linejoin: round;
@@ -491,28 +462,81 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       animation: flow 1.1s linear infinite;
     }
     .node {
-      fill: #ffffff;
-      stroke: #c4d0d6;
+      fill: #17272e;
+      stroke: rgba(255, 255, 255, 0.2);
       stroke-width: 2;
     }
-    .node.dark { fill: #142126; stroke: #142126; }
+    .node.dark { fill: #0a1115; stroke: rgba(255, 255, 255, 0.2); }
     .node.green { fill: var(--green); stroke: var(--green-dark); }
-    .car-icon {
-      fill: none;
-      stroke: #26383f;
-      stroke-width: 5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .station-body {
+      fill: #0c1519;
+      stroke: rgba(236, 246, 245, 0.72);
+      stroke-width: 3;
     }
-    .car-icon path {
+    .station-side {
+      fill: rgba(32, 212, 155, 0.16);
+    }
+    .station-screen {
+      fill: #ecf6f5;
+    }
+    .station-screen-inner {
+      fill: #1b2d34;
+    }
+    .station-slot {
+      fill: rgba(236, 246, 245, 0.18);
+    }
+    .station-base {
+      fill: rgba(236, 246, 245, 0.1);
+    }
+    .station-bolt {
+      fill: var(--green);
+      stroke: var(--green-dark);
+      stroke-width: 2;
+    }
+    .ev-car * {
       vector-effect: non-scaling-stroke;
     }
     .car-shadow {
       fill: none;
-      stroke: rgba(38, 56, 63, 0.1);
+      stroke: rgba(236, 246, 245, 0.11);
       stroke-width: 18;
       stroke-linecap: round;
       vector-effect: non-scaling-stroke;
+    }
+    .ev-body {
+      fill: #17272e;
+      stroke: #ecf6f5;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ev-window {
+      fill: rgba(101, 199, 239, 0.13);
+      stroke: #ecf6f5;
+      stroke-width: 4;
+      stroke-linejoin: round;
+    }
+    .ev-detail {
+      fill: none;
+      stroke: rgba(236, 246, 245, 0.6);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+    .ev-accent {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 4;
+      stroke-linecap: round;
+    }
+    .ev-wheel {
+      fill: #0b1216;
+      stroke: #ecf6f5;
+      stroke-width: 5;
+    }
+    .ev-rim {
+      fill: none;
+      stroke: rgba(236, 246, 245, 0.48);
+      stroke-width: 3;
     }
     .charge-port {
       fill: var(--green);
@@ -522,63 +546,113 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     @keyframes flow {
       to { stroke-dashoffset: -32; }
     }
-    .facts {
+    .limits-panel {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-content: start;
+      gap: 14px;
+      min-width: 0;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.065);
+    }
+    .limit-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .limit-top strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 34px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .current-subline {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: right;
+    }
+    .charge-bar {
+      display: grid;
+      gap: 9px;
+    }
+    .bar-head {
+      display: flex;
+      justify-content: space-between;
       gap: 10px;
-    }
-    .fact {
-      min-height: 76px;
-      padding: 13px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .fact .label, .data-card .label {
       color: var(--muted);
       font-size: 12px;
-      font-weight: 950;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-weight: 900;
     }
-    .fact strong {
+    .track {
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.11);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .fill {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--green-dark), var(--green));
+      transition: width 240ms ease;
+    }
+    .limit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .mini-stat {
+      min-height: 66px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+    .mini-stat strong {
       display: block;
-      margin-top: 8px;
+      margin-top: 7px;
       color: var(--ink);
-      font-size: 23px;
-      line-height: 1.08;
-      overflow-wrap: anywhere;
+      font-size: 19px;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
     }
     .control-panel {
-      align-self: stretch;
-      padding: 16px;
-      background: #f7faf9;
-      color: var(--ink-dark);
+      align-self: start;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.075);
+      color: var(--ink);
     }
     .control-panel h2 {
-      margin: 0 0 14px;
-      font-size: 24px;
+      margin: 0 0 12px;
+      font-size: 18px;
       line-height: 1.1;
       letter-spacing: 0;
     }
     .mode-buttons {
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
     .mode-button {
-      min-height: 74px;
+      min-height: 54px;
       display: grid;
-      grid-template-columns: 46px 1fr;
-      gap: 13px;
+      grid-template-columns: 38px 1fr;
+      gap: 10px;
       align-items: center;
       width: 100%;
       border: 1px solid var(--line-dark);
       border-radius: 8px;
-      background: #ffffff;
-      color: var(--ink-dark);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--ink);
       cursor: pointer;
       text-align: left;
-      padding: 12px;
+      padding: 8px 10px;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
@@ -586,21 +660,23 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     }
     .mode-button:hover {
       transform: translateY(-1px);
-      border-color: #aebdc4;
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.09);
     }
     .mode-button .icon {
       display: grid;
       place-items: center;
-      width: 46px;
-      height: 46px;
+      width: 38px;
+      height: 38px;
       border-radius: 8px;
-      background: #e8eef1;
-      color: #43535a;
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--muted);
+      font-size: 13px;
       font-weight: 950;
     }
     .mode-button strong {
       display: block;
-      font-size: 17px;
+      font-size: 15px;
       line-height: 1.08;
     }
     .mode-button .text {
@@ -608,131 +684,108 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       min-width: 0;
     }
     .mode-button .desc {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted-dark);
-      font-size: 13px;
-      font-weight: 750;
-      line-height: 1.28;
+      display: none;
     }
     .mode-button.active {
-      background: #123129;
-      border-color: #123129;
+      background: rgba(32, 212, 155, 0.16);
+      border-color: rgba(32, 212, 155, 0.38);
       color: #ffffff;
-      box-shadow: 0 12px 24px rgba(18, 49, 41, 0.2);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
     }
     .mode-button.active .icon {
       background: var(--green);
       color: #06261b;
     }
-    .mode-button.active .desc { color: rgba(255, 255, 255, 0.76); }
     .mode-button:disabled {
       cursor: not-allowed;
       opacity: 0.62;
       transform: none;
     }
     .current-control {
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line-dark);
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
     }
     .current-control label {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      color: var(--muted-dark);
+      color: var(--muted);
+      font-size: 13px;
       font-weight: 900;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .current-control label strong {
-      color: var(--ink-dark);
-      font-size: 24px;
+      color: var(--ink);
+      font-size: 20px;
       font-variant-numeric: tabular-nums;
     }
     .slider-row {
       display: grid;
-      grid-template-columns: 1fr 82px;
-      gap: 12px;
+      grid-template-columns: 1fr 76px;
+      gap: 10px;
       align-items: center;
     }
     input[type="range"] {
       width: 100%;
-      accent-color: var(--green-dark);
+      accent-color: var(--green);
     }
     input[type="number"] {
-      width: 82px;
-      height: 48px;
+      width: 76px;
+      height: 42px;
       border: 1px solid var(--line-dark);
       border-radius: 8px;
-      padding: 8px;
-      background: #ffffff;
-      color: var(--ink-dark);
+      padding: 7px;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--ink);
       font-weight: 900;
       text-align: right;
     }
     .hint {
-      margin-top: 12px;
-      color: var(--muted-dark);
-      font-size: 14px;
-      line-height: 1.35;
+      display: none;
     }
     .error {
       display: none;
-      margin-top: 14px;
+      margin-top: 12px;
       padding: 10px 12px;
-      border: 1px solid rgba(228, 91, 91, 0.32);
+      border: 1px solid rgba(228, 91, 91, 0.36);
       border-radius: 8px;
-      background: #fff0f0;
-      color: #b32626;
+      background: rgba(228, 91, 91, 0.12);
+      color: #ffb4b4;
       font-weight: 900;
-    }
-    .data-grid {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .data-card {
-      min-height: 78px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .data-card .value {
-      margin-top: 7px;
-      color: var(--ink);
-      font-size: 22px;
-      font-weight: 950;
-      line-height: 1.05;
-      overflow-wrap: anywhere;
-      font-variant-numeric: tabular-nums;
-    }
-    .data-card .value.good { color: var(--green); }
-    .data-card .value.warn { color: var(--yellow); }
-    .unit {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.25;
     }
     @media (max-width: 1050px) {
       .layout { grid-template-columns: 1fr; }
-      .visual { grid-template-columns: 1fr; }
-      .diagram-card, .diagram { min-height: 300px; }
+      .operations-grid { grid-template-columns: 1fr; }
+      .diagram-card, .diagram { height: 280px; }
       .control-panel { align-self: auto; }
-      .data-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .mode-buttons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
     @media (max-width: 720px) {
-      main { width: min(100% - 14px, 1240px); padding: 8px 0 18px; }
+      main { width: calc(100vw - 20px); padding: 6px 0 14px; }
       .kiosk { padding: 8px; }
-      .screen-inner { min-height: calc(100vh - 34px); padding: 14px; }
-      .topbar, .headline { grid-template-columns: 1fr; }
-      .status-chip, .mode-badge, .status-rail { justify-self: start; }
-      .status-rail { justify-items: start; }
-      .facts, .data-grid { grid-template-columns: 1fr; }
-      .stage-panel { padding: 14px; }
+      .layout, .stage-panel, .metric-card, .control-panel, .limits-panel, .diagram-card { max-width: 100%; }
+      .screen-inner { min-height: calc(100vh - 34px); padding: 12px; }
+      .topbar, .dashboard-head { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .status-title { font-size: 28px; }
+      .status-chip, .status-badges { justify-self: start; justify-content: flex-start; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .operations-grid { grid-template-columns: 1fr; }
+      .diagram-card, .diagram { height: 240px; }
+      .limit-grid { grid-template-columns: 1fr; }
+      .stage-panel { padding: 12px; }
       .control-panel { padding: 14px; }
+      .mode-buttons { grid-template-columns: 1fr; }
       .slider-row { grid-template-columns: 1fr; }
       input[type="number"] { width: 100%; text-align: left; }
-      .mode-button { min-height: 70px; }
+      .mode-button { min-height: 52px; }
+    }
+    @media (max-width: 560px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+      .metric-value { font-size: 25px; }
+      .metric-value.compact { font-size: 21px; }
     }
   </style>
 </head>
@@ -744,39 +797,59 @@ DASHBOARD_TEMPLATE = """<!doctype html>
           <header class="topbar">
             <div>
               <h1>__TITLE__</h1>
-              <p class="subline">AC-Ladepunkt mit PV-Überschussregelung</p>
+              <p class="subline">Solar laden · Live</p>
             </div>
             <div class="status-chip"><span id="liveDot" class="dot"></span><span id="liveText">Verbinde...</span></div>
           </header>
 
           <div class="layout">
             <section id="hero" class="stage-panel">
-              <div class="headline">
+              <div class="dashboard-head">
                 <div>
-                  <div class="eyebrow">Ladefreigabe</div>
-                  <h2 id="statusTitle" class="status-title">Bereit zum Laden</h2>
-                  <p id="statusCopy" class="status-copy">Die Ladesäule wartet auf den aktuellen Status.</p>
+                  <div class="eyebrow">Lademodus</div>
+                  <h2 id="statusTitle" class="status-title">--</h2>
                 </div>
-                <div class="status-rail">
-                  <div id="modeBadge" class="mode-badge">--</div>
-                  <div id="hardwareOverrideNotice" class="override-notice" hidden>
-                    <strong>Hardware-FreeCharge aktiv</strong>
-                    <span>Der physische Schalter kann die Softwarevorgabe übersteuern.</span>
-                  </div>
+                <div class="status-badges">
+                  <span id="modeBadge" class="status-badge accent">--</span>
+                  <span id="reasonBadge" class="status-badge">--</span>
+                  <span id="hardwareOverrideNotice" class="status-badge warning" hidden>HW-FreeCharge</span>
                 </div>
               </div>
 
-              <div class="visual">
-                <div class="readout">
-                  <div class="readout-label">Aktueller Ladestrom</div>
-                  <div class="amp"><strong id="effectiveCurrent">--</strong><span>A</span></div>
-                  <div id="currentSubline" class="current-subline">Hardware- und Sicherheitslimits bleiben aktiv.</div>
-                  <div class="charge-bar">
-                    <div class="bar-head"><span>Freigabe vom Maximum</span><strong id="meterPercent">--</strong></div>
-                    <div class="track"><div id="meterFill" class="fill"></div></div>
-                  </div>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <div class="label">Netzleistung</div>
+                  <div id="gridPowerMetric" class="metric-value"><span id="gridPower">--</span><span class="metric-unit">W</span></div>
+                  <div id="gridUnit" class="unit">Import / Export</div>
                 </div>
+                <div class="metric-card primary">
+                  <div class="label">PV-Überschuss</div>
+                  <div id="surplusMetric" class="metric-value"><span id="surplus">--</span><span class="metric-unit">W</span></div>
+                  <div id="surplusUnit" class="unit">verfügbar</div>
+                </div>
+                <div class="metric-card">
+                  <div class="label">Zielstrom</div>
+                  <div class="metric-value"><span id="targetCurrent">--</span><span class="metric-unit">A</span></div>
+                  <div class="unit">Sollwert</div>
+                </div>
+                <div class="metric-card primary">
+                  <div class="label">Ladestrom</div>
+                  <div class="metric-value"><span id="effectiveCurrent">--</span><span class="metric-unit">A</span></div>
+                  <div id="currentSubline" class="unit">--</div>
+                </div>
+                <div class="metric-card">
+                  <div class="label">Fahrzeug</div>
+                  <div id="vehicle" class="metric-value compact">--</div>
+                  <div class="unit">Status</div>
+                </div>
+                <div class="metric-card">
+                  <div class="label">CP-State</div>
+                  <div id="cpState" class="metric-value compact">--</div>
+                  <div class="unit">Kontakt</div>
+                </div>
+              </div>
 
+              <div class="operations-grid">
                 <div class="diagram-card" aria-label="Energiefluss">
                   <svg class="diagram" viewBox="18 50 704 310" role="img" aria-labelledby="diagramTitle">
                     <title id="diagramTitle">Energiefluss zwischen PV, Netz, Charger und Fahrzeug</title>
@@ -791,77 +864,95 @@ DASHBOARD_TEMPLATE = """<!doctype html>
                     <path id="flowPv" class="flow-line" d="M168 107 C205 107 228 127 252 156"></path>
                     <path id="flowGrid" class="flow-line grid-import" d="M168 273 C205 273 229 250 252 228"></path>
 
-                    <rect class="node dark" x="246" y="88" width="104" height="204" rx="8"></rect>
-                    <rect x="269" y="112" width="58" height="52" rx="4" fill="#ffffff"></rect>
-                    <rect x="275" y="121" width="46" height="34" rx="3" fill="#25343b"></rect>
-                    <circle class="node green" cx="298" cy="202" r="21"></circle>
-                    <path d="M298 188 L286 207 H298 L292 221 L312 196 H300 Z" fill="#ffffff"></path>
-                    <text class="svg-label" x="298" y="330" text-anchor="middle">Ladesäule</text>
-
-                    <!-- Car pictogram based on Tabler Icons "car" (MIT): https://tabler.io/icons/icon/car -->
-                    <path class="car-shadow" d="M422 336 H676"></path>
-                    <g class="car-icon" transform="translate(410 102) scale(12)">
-                      <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                      <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                      <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5"></path>
+                    <g class="charger-station">
+                      <ellipse class="station-base" cx="298" cy="302" rx="58" ry="10"></ellipse>
+                      <rect class="station-body" x="248" y="88" width="100" height="204" rx="10"></rect>
+                      <path class="station-side" d="M330 98 H338 V282 H330 Z"></path>
+                      <rect class="station-screen" x="270" y="112" width="56" height="44" rx="5"></rect>
+                      <rect class="station-screen-inner" x="278" y="121" width="40" height="26" rx="3"></rect>
+                      <rect class="station-slot" x="271" y="170" width="54" height="7" rx="3.5"></rect>
+                      <rect class="station-slot" x="271" y="184" width="42" height="6" rx="3"></rect>
+                      <circle class="station-bolt" cx="298" cy="218" r="22"></circle>
+                      <path d="M299 203 L286 223 H299 L292 238 L314 212 H301 Z" fill="#ffffff"></path>
                     </g>
-                    <circle class="charge-port" cx="438" cy="244" r="16"></circle>
-                    <path class="cable-base" d="M350 202 C382 202 400 232 438 244"></path>
-                    <path id="flowCable" class="cable-flow" d="M350 202 C382 202 400 232 438 244"></path>
+                    <text class="svg-label" x="298" y="330" text-anchor="middle">Wallbox</text>
+
+                    <path class="car-shadow" d="M422 336 H676"></path>
+                    <g class="ev-car">
+                      <path class="ev-body" d="M394 286 L414 238 C421 222 436 212 454 212 H520 C545 212 563 225 582 252 L626 258 C652 262 670 280 670 306 V322 C670 331 663 338 654 338 H400 C391 338 384 331 384 322 V306 C384 296 388 290 394 286 Z"></path>
+                      <path class="ev-window" d="M434 252 L448 226 H495 V252 Z"></path>
+                      <path class="ev-window" d="M502 226 H520 C539 226 552 237 565 252 H502 Z"></path>
+                      <path class="ev-detail" d="M586 268 H626"></path>
+                      <path class="ev-accent" d="M410 284 C446 275 529 276 624 284"></path>
+                      <circle class="ev-wheel" cx="448" cy="334" r="22"></circle>
+                      <circle class="ev-rim" cx="448" cy="334" r="10"></circle>
+                      <circle class="ev-wheel" cx="604" cy="334" r="22"></circle>
+                      <circle class="ev-rim" cx="604" cy="334" r="10"></circle>
+                    </g>
+                    <circle class="charge-port" cx="402" cy="286" r="14"></circle>
+                    <path class="cable-base" d="M348 218 C370 218 380 270 402 286"></path>
+                    <path id="flowCable" class="cable-flow" d="M348 218 C370 218 380 270 402 286"></path>
 
                     <rect class="svg-pill" x="440" y="108" width="148" height="24" rx="12"></rect>
                     <text class="svg-small" x="514" y="125" text-anchor="middle">AC 230 V · 1 Phase</text>
                   </svg>
                 </div>
-              </div>
 
-              <div class="facts">
-                <div class="fact"><div class="label">Fahrzeug</div><strong id="vehicle">--</strong></div>
-                <div class="fact"><div class="label">Zielstrom</div><strong><span id="targetCurrent">--</span> A</strong></div>
-                <div class="fact"><div class="label">PV-Status</div><strong id="pvStatus">--</strong></div>
+                <div class="limits-panel">
+                  <div class="limit-top">
+                    <div>
+                      <div class="label">Freigabe</div>
+                      <strong id="meterPercent">--</strong>
+                    </div>
+                    <div id="pvStatus" class="status-badge">--</div>
+                  </div>
+
+                  <div class="charge-bar">
+                    <div class="bar-head"><span>Hardware-Limit</span><strong id="meterPercentInline">--</strong></div>
+                    <div class="track"><div id="meterFill" class="fill"></div></div>
+                  </div>
+
+                  <div class="limit-grid">
+                    <div class="mini-stat"><div class="label">Hardware-Max</div><strong><span id="hwMax">--</span> A</strong></div>
+                    <div class="mini-stat"><div class="label">RLC</div><strong><span id="rlc">--</span>%</strong></div>
+                    <div class="mini-stat"><div class="label">Status</div><strong id="reason">--</strong></div>
+                    <div class="mini-stat"><div class="label">Update</div><strong id="timestamp">--</strong></div>
+                  </div>
+                </div>
               </div>
             </section>
 
             <aside class="control-panel">
-              <h2>Lademodus</h2>
+              <h2>Laden</h2>
               <div class="mode-buttons">
                 <button class="mode-button" data-mode="off">
                   <span class="icon">II</span>
-                  <span class="text"><strong>Laden pausieren</strong><span class="desc">Stoppt die Ladefreigabe.</span></span>
+                  <span class="text"><strong>Pause</strong><span class="desc"></span></span>
                 </button>
                 <button class="mode-button" data-mode="pv">
                   <span class="icon">PV</span>
-                  <span class="text"><strong>PV-Überschuss</strong><span class="desc">Startet automatisch mit Solarstrom.</span></span>
+                  <span class="text"><strong>PV</strong><span class="desc"></span></span>
                 </button>
                 <button class="mode-button" data-mode="instant">
                   <span class="icon">A</span>
-                  <span class="text"><strong>Sofort laden</strong><span class="desc">Nutzt den eingestellten Strom.</span></span>
+                  <span class="text"><strong>Sofort</strong><span class="desc"></span></span>
                 </button>
               </div>
 
               <div class="current-control">
                 <label for="currentSlider">
-                  <span>Sofortladestrom</span>
+                  <span>Sofortstrom</span>
                   <strong><span id="instantCurrentLabel">--</span> A</strong>
                 </label>
                 <div class="slider-row">
                   <input id="currentSlider" type="range" min="0" max="32" step="1" value="6">
                   <input id="currentInput" type="number" min="0" max="32" step="1" value="6">
                 </div>
-                <div class="hint">Gilt für „Sofort laden“. Hardware-Maximum und RLC-Begrenzung bleiben aktiv.</div>
+                <div class="hint"></div>
               </div>
 
               <div id="error" class="error"></div>
             </aside>
-          </div>
-
-          <div class="data-grid">
-            <div class="data-card"><div class="label">PV-Überschuss</div><div id="surplus" class="value">--</div><div id="surplusUnit" class="unit">W verfügbar</div></div>
-            <div class="data-card"><div class="label">Netzleistung</div><div id="gridPower" class="value">--</div><div id="gridUnit" class="unit">W Import / Export</div></div>
-            <div class="data-card"><div class="label">CP-State</div><div id="cpState" class="value">--</div><div class="unit">Ladestatus</div></div>
-            <div class="data-card"><div class="label">Hardware-Max</div><div id="hwMax" class="value">--</div><div class="unit">A Grenze</div></div>
-            <div class="data-card"><div class="label">RLC</div><div id="rlc" class="value">--</div><div class="unit">% Begrenzung</div></div>
-            <div class="data-card"><div class="label">Hinweis</div><div id="reason" class="value">--</div><div id="timestamp" class="unit">Aktualisierung</div></div>
           </div>
         </div>
       </div>
@@ -877,26 +968,26 @@ DASHBOARD_TEMPLATE = """<!doctype html>
     let pendingCurrent = null;
 
     const MODE_LABELS = {
-      off: "Pausiert",
+      off: "Pause",
       pv: "PV-Überschuss",
-      instant: "Sofort laden",
+      instant: "Sofortladen",
       hardware_override_free_charge: "FreeCharge"
     };
 
     const REASON_LABELS = {
-      off: "Pausiert",
-      instant: "Sofortladen",
-      pv_surplus_available: "Solarstrom reicht",
-      pv_waiting_start_delay: "Startverzögerung",
-      pv_waiting_stop_delay: "Stopverzögerung",
-      pv_waiting_for_surplus: "Wartet auf Sonne",
+      off: "Pause",
+      instant: "Instant",
+      pv_surplus_available: "PV aktiv",
+      pv_waiting_start_delay: "Startdelay",
+      pv_waiting_stop_delay: "Stopdelay",
+      pv_waiting_for_surplus: "Warten",
       stale_grid_power: "PV-Daten fehlen",
       vehicle_not_connected: "Kein Fahrzeug",
-      hardware_override_free_charge: "FreeCharge aktiv",
+      hardware_override_free_charge: "FreeCharge",
       hardware_limit: "Hardware-Limit",
       rlc_limit: "RLC-Limit",
       hardware_or_rlc_limit: "Limit aktiv",
-      not_started: "Dienst startet"
+      not_started: "Start"
     };
 
     const nf = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
@@ -930,56 +1021,19 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       error.style.display = message ? "block" : "none";
     }
 
-    function selectedModeTitle(state) {
-      if (state.mode === "off") return "Laden pausiert";
-      if (state.mode === "pv") return "PV-Überschuss gewählt";
-      if (state.mode === "instant") return "Sofort laden gewählt";
-      return "Bereit zum Laden";
-    }
-
-    function selectedModeCopy(state) {
-      if (state.mode === "off") return "Der Softwaremodus ist pausiert. Hardware-FreeCharge wird separat angezeigt.";
-      if (state.mode === "pv" && state.pv_input_stale) return "PV-Überschuss ist ausgewählt; Home Assistant liefert gerade keine aktuellen Netzdaten.";
-      if (state.mode === "pv") return "PV-Überschuss ist ausgewählt. Solarwerte und Zielstrom bleiben sichtbar.";
-      if (state.mode === "instant") return "Sofortladen ist ausgewählt. Der eingestellte Strom bleibt sichtbar.";
-      return "Wählen Sie PV-Überschuss oder Sofortladen.";
-    }
-
-    function customerTitle(state) {
-      if (state.hardware_override_free_charge) return selectedModeTitle(state);
-      if (!state.vehicle_connected) return "Fahrzeug anschließen";
-      if (state.is_charging && state.mode === "pv") return "Lädt mit Solarstrom";
-      if (state.is_charging) return "Ihr Fahrzeug lädt";
-      if (state.mode === "off") return "Laden pausiert";
-      if (state.mode === "pv" && state.pv_input_stale) return "Warten auf PV-Daten";
-      if (state.mode === "pv") return "Warten auf Überschuss";
-      return "Bereit zum Laden";
-    }
-
-    function customerCopy(state) {
-      if (state.hardware_override_free_charge) return selectedModeCopy(state);
-      if (!state.vehicle_connected) return "Stecker einstecken. Danach übernimmt der gewählte Lademodus.";
-      if (state.is_charging && state.mode === "pv") return "Solar-Überschuss wird in Ladestrom umgesetzt. Netzbezug bleibt begrenzt.";
-      if (state.is_charging) return "Der Charger gibt aktuell Strom frei. Alle Hardware-Limits bleiben aktiv.";
-      if (state.mode === "pv" && state.pv_input_stale) return "Home Assistant liefert gerade keine aktuellen Netzdaten.";
-      if (state.mode === "pv") return "Der Charger startet automatisch, sobald genug Überschuss stabil vorhanden ist.";
-      if (state.mode === "off") return "Der Ladepunkt bleibt gesperrt, bis ein anderer Modus gewählt wird.";
-      return "Wählen Sie PV-Überschuss oder Sofortladen.";
-    }
-
     function pvLabel(state) {
       const surplus = numberOrNull(state.pv_surplus_w);
-      if (state.pv_input_stale) return "Daten fehlen";
-      if (surplus !== null && surplus > 0) return "Überschuss aktiv";
-      return "Wartet";
+      if (state.pv_input_stale) return "PV-Daten";
+      if (surplus !== null && surplus > 0) return "Überschuss";
+      return "Warten";
     }
 
     function gridUnit(value) {
       const numeric = numberOrNull(value);
-      if (numeric === null) return "W Import / Export";
-      if (numeric > 0) return "W Netzbezug";
-      if (numeric < 0) return "W Einspeisung";
-      return "W ausgeglichen";
+      if (numeric === null) return "Import / Export";
+      if (numeric > 0) return "Netzbezug";
+      if (numeric < 0) return "Einspeisung";
+      return "Ausgeglichen";
     }
 
     function meterPercent(state) {
@@ -987,6 +1041,24 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       const max = numberOrNull(state.hw_max_current);
       if (current === null || max === null || max <= 0) return null;
       return Math.max(0, Math.min(100, Math.round((current / max) * 100)));
+    }
+
+    function fmtTimestamp(value) {
+      if (!value) return "--";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function isWarningReason(reason, stale) {
+      return stale || [
+        "stale_grid_power",
+        "vehicle_not_connected",
+        "hardware_override_free_charge",
+        "hardware_limit",
+        "rlc_limit",
+        "hardware_or_rlc_limit"
+      ].includes(reason);
     }
 
     function updateFlow(state) {
@@ -1043,20 +1115,23 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       const surplus = numberOrNull(state.pv_surplus_w);
       const grid = numberOrNull(state.grid_power_w);
       const hardwareOverride = Boolean(state.hardware_override_free_charge);
+      const reasonText = label(REASON_LABELS, state.limit_reason);
+      const percentText = percent === null ? "--" : percent + "%";
 
       $("liveDot").className = "dot " + (charging ? "on" : stale ? "warn" : "");
       $("liveText").textContent = charging ? "Lädt" : stale ? "PV-Daten fehlen" : "Bereit";
-      $("statusTitle").textContent = customerTitle(state);
-      $("statusCopy").textContent = customerCopy(state);
+      $("statusTitle").textContent = label(MODE_LABELS, selectedMode);
       $("effectiveCurrent").textContent = fmtAmp(current);
-      $("currentSubline").textContent = label(REASON_LABELS, state.limit_reason);
+      $("currentSubline").textContent = reasonText;
       $("modeBadge").textContent = label(MODE_LABELS, selectedMode);
+      $("reasonBadge").textContent = reasonText;
       $("hardwareOverrideNotice").hidden = !hardwareOverride;
-      $("vehicle").textContent = state.vehicle_connected ? "Verbunden" : "Nicht verbunden";
+      $("vehicle").textContent = state.vehicle_connected ? "Verbunden" : "Kein Auto";
       $("targetCurrent").textContent = fmtAmp(state.target_current_A);
       $("pvStatus").textContent = pvLabel(state);
       $("meterFill").style.width = percent === null ? "0%" : percent + "%";
-      $("meterPercent").textContent = percent === null ? "--" : percent + "%";
+      $("meterPercent").textContent = percentText;
+      $("meterPercentInline").textContent = percentText;
 
       $("surplus").textContent = fmt(surplus, 0);
       $("gridPower").textContent = fmt(grid, 0);
@@ -1064,13 +1139,14 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       $("cpState").textContent = state.cp_state || "--";
       $("hwMax").textContent = fmt(state.hw_max_current, 0);
       $("rlc").textContent = fmt(state.rlc_percentage, 0);
-      $("reason").textContent = label(REASON_LABELS, state.limit_reason);
-      $("timestamp").textContent = state.timestamp || "--";
+      $("reason").textContent = reasonText;
+      $("timestamp").textContent = fmtTimestamp(state.timestamp);
       $("instantCurrentLabel").textContent = fmtAmp(state.instant_current_A);
 
-      $("surplus").className = "value " + (surplus !== null && surplus > 0 ? "good" : "");
-      $("gridPower").className = "value " + (grid !== null && grid > 0 ? "warn" : "");
-      $("reason").className = "value " + (stale ? "warn" : "");
+      $("surplusMetric").className = "metric-value " + (surplus !== null && surplus > 0 ? "good" : "");
+      $("gridPowerMetric").className = "metric-value " + (grid !== null && grid > 0 ? "warn" : grid !== null && grid < 0 ? "good" : "");
+      $("reasonBadge").className = "status-badge " + (isWarningReason(state.limit_reason, stale) ? "warn" : "");
+      $("pvStatus").className = "status-badge " + (stale ? "warn" : surplus !== null && surplus > 0 ? "accent" : "");
       buttons.forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
       updateFlow(state);
 
@@ -1090,8 +1166,10 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       } catch (err) {
         $("liveDot").className = "dot warn";
         $("liveText").textContent = "Offline";
-        $("statusTitle").textContent = "Keine Verbindung";
-        $("statusCopy").textContent = "Die Webansicht erreicht den lokalen Charger-Dienst gerade nicht.";
+        $("statusTitle").textContent = "Offline";
+        $("modeBadge").textContent = "--";
+        $("reasonBadge").textContent = "Offline";
+        $("reasonBadge").className = "status-badge warn";
         showError(err.message);
       }
     }

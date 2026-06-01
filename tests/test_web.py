@@ -67,12 +67,20 @@ class WebDashboardTests(unittest.TestCase):
         html = render_dashboard("Juice Charger Easy")
 
         self.assertIn("hardwareOverrideNotice", html)
-        self.assertIn("Hardware-FreeCharge aktiv", html)
-        self.assertIn("Der physische Schalter kann die Softwarevorgabe übersteuern.", html)
+        self.assertIn("HW-FreeCharge", html)
+        self.assertIn("reasonBadge", html)
+        self.assertIn("metrics-grid", html)
+        self.assertIn("Netzleistung", html)
+        self.assertIn("PV-Überschuss", html)
+        self.assertIn("Zielstrom", html)
+        self.assertIn("Ladestrom", html)
         self.assertIn("const selectedMode = state.mode || state.effective_mode;", html)
         self.assertIn('label(MODE_LABELS, selectedMode)', html)
+        self.assertNotIn("PV-Überschuss " + "gewählt", html)
+        self.assertNotIn("PV-Überschuss ist " + "ausgewählt", html)
+        self.assertNotIn("Der physische " + "Schalter kann", html)
         self.assertNotIn("FreeCharge ist aktiv", html)
-        self.assertNotIn("Der physische Schalter gibt das Laden direkt frei.", html)
+        self.assertNotIn("Der physische " + "Schalter gibt das Laden direkt frei.", html)
 
     def test_server_serves_state_and_accepts_commands(self) -> None:
         runtime = FakeRuntime()
