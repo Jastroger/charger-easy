@@ -12,7 +12,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "mqtt": {
         "broker_host": "mqtt.local",
         "broker_port": 1883,
-        "client_id": "JuiceBoosterPi",
+        "client_id": "ChargerEasyPi",
         "username": None,
         "password": None,
         "base_topic": "juicebooster",
@@ -38,7 +38,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "discovery": True,
         "discovery_prefix": "homeassistant",
         "device_id": "juice_charger_easy",
-        "device_name": "Juice Charger Easy",
+        "device_name": "PV/MQTT Software for Charger Easy",
     },
     "pv": {
         "grid_power_topic": None,
@@ -56,7 +56,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "enabled": True,
         "host": "0.0.0.0",
         "port": 8080,
-        "title": "Juice Charger Easy",
+        "title": "PV/MQTT Software for Charger Easy",
     },
 }
 

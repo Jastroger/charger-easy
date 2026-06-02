@@ -10,7 +10,7 @@ class HomeAssistantConfig:
     discovery: bool = True
     discovery_prefix: str = "homeassistant"
     device_id: str = "juice_charger_easy"
-    device_name: str = "Juice Charger Easy"
+    device_name: str = "PV/MQTT Software for Charger Easy"
 
 
 class HomeAssistantDiscovery:
@@ -29,7 +29,7 @@ class HomeAssistantDiscovery:
             "identifiers": [self.config.device_id],
             "name": self.config.device_name,
             "manufacturer": "Jastroger",
-            "model": "Juice CHARGER Easy MQTT Controller",
+            "model": "Unofficial PV/MQTT Software",
         }
         availability_topic = f"{self.base_topic}/availability"
         state_topic = f"{self.base_topic}/state"

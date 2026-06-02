@@ -1,22 +1,25 @@
-# Juice Charger Easy
+# PV/MQTT Software for Charger Easy
 
-Turn your Juice Booster Easy into a Home Assistant controlled PV surplus charger.
+Unofficial PV surplus and MQTT control software for Charger Easy hardware.
 
-`Home Assistant` `MQTT` `PV surplus charging` `Raspberry Pi` `Juice Booster Easy`
+`Unofficial` `Home Assistant` `MQTT` `PV surplus charging` `Raspberry Pi`
 
-Juice Charger Easy is an open-source Raspberry Pi based controller that
-integrates the Juice Booster Easy / Juice CHARGER Easy setup with Home
-Assistant. It enables local web control, MQTT integration, and PV surplus
-charging while keeping the hardware safety limits in place.
+This repository contains an open-source Raspberry Pi based software fork and
+extension for installations using Juice Booster Easy / Juice CHARGER Easy
+hardware. It adds local web control, MQTT integration, Home Assistant Discovery,
+and PV surplus charging while keeping the hardware safety limits in place.
+
+This is not an official Juice Technology product. Product names are used only to
+describe the compatible hardware.
 
 Screenshot placeholder: add `docs/images/dashboard.png` before publishing.
 See [docs/images/README.md](docs/images/README.md) for all planned image slots.
 
 ## Why This Exists
 
-Many Juice Booster Easy installations already have solid charging hardware, but
-not modern Home Assistant control or PV surplus charging. This project keeps the
-existing hardware concept and adds:
+Many installations using Juice Booster Easy / Juice CHARGER Easy hardware
+already have solid charging hardware, but not modern Home Assistant control or
+PV surplus charging. This software keeps the existing hardware concept and adds:
 
 - a Raspberry Pi control service
 - MQTT command and state topics
@@ -52,7 +55,7 @@ remain the safety boundary.
 
 ## Security and Privacy
 
-Juice Charger Easy is designed for a trusted local network.
+This controller software is designed for a trusted local network.
 
 - The web dashboard and API do not implement authentication.
 - The default web host `0.0.0.0` makes the dashboard reachable from the LAN.
@@ -71,7 +74,8 @@ See [Security and Privacy](docs/security-privacy.md).
 This repository is a fork of the original
 [Andreas1312/charger-easy](https://github.com/Andreas1312/charger-easy)
 project by Andreas1312. This fork builds on that work and adds Home Assistant,
-MQTT, PV surplus, documentation, and dashboard commissioning improvements.
+MQTT, PV surplus, documentation, and dashboard commissioning improvements for
+our use cases.
 
 ## Quick Start
 
@@ -134,7 +138,7 @@ Create `/etc/systemd/system/juice-charger-easy.service`:
 
 ```ini
 [Unit]
-Description=Juice Charger Easy
+Description=PV/MQTT Software for Charger Easy
 After=network-online.target
 Wants=network-online.target
 
@@ -168,8 +172,8 @@ GPIO/SPI permissions allow it.
 
 Home Assistant talks to this controller through MQTT.
 
-With MQTT Discovery enabled, Home Assistant creates a `Juice Charger Easy`
-device with controls and sensors for:
+With MQTT Discovery enabled, Home Assistant creates a
+`PV/MQTT Software for Charger Easy` device with controls and sensors for:
 
 - selected mode
 - instant current
@@ -306,7 +310,7 @@ Full option reference:
 | `home_assistant.discovery` | boolean | publishes MQTT Discovery entities |
 | `home_assistant.discovery_prefix` | topic | usually `homeassistant` |
 | `home_assistant.device_id` | text | stable HA device/entity prefix |
-| `home_assistant.device_name` | text | visible HA device name |
+| `home_assistant.device_name` | text | visible HA device name, default `PV/MQTT Software for Charger Easy` |
 | `pv.grid_power_topic` | topic | MQTT input for grid import/export |
 | `pv.grid_power_export_negative` | boolean | `true` when export is negative |
 | `pv.voltage` | V | W-to-A calculation voltage |
@@ -320,7 +324,7 @@ Full option reference:
 | `web.enabled` | boolean | enables local dashboard/API |
 | `web.host` | host | bind address; `0.0.0.0` means LAN reachable |
 | `web.port` | port | dashboard port |
-| `web.title` | text | browser/dashboard title |
+| `web.title` | text | browser/dashboard title, default `PV/MQTT Software for Charger Easy` |
 
 ## Hardware Overview
 
@@ -454,7 +458,6 @@ input through state and the dashboard.
 - [MQTT](docs/mqtt.md)
 - [Hardware](docs/hardware.md)
 - [Security and Privacy](docs/security-privacy.md)
-- [Community launch drafts](docs/community-posts.md)
 - [Image placeholders](docs/images/README.md)
 
 ## Development
@@ -506,7 +509,7 @@ document it as a TODO rather than implying support.
 Suggested GitHub description:
 
 ```text
-Home Assistant compatible PV surplus charging controller for Juice Booster Easy / Charger Easy using Raspberry Pi and MQTT.
+Unofficial Home Assistant and MQTT PV surplus controller software for Juice CHARGER Easy / Juice Booster Easy hardware.
 ```
 
 Suggested GitHub topics:
@@ -538,4 +541,5 @@ to the Juice Booster, house installation, vehicles, Raspberry Pi hardware, or
 other equipment. Use at your own risk.
 
 All product and brand names are the property of their respective owners. This
-project is not affiliated with Juice Technology AG.
+project is an unofficial software fork/modification and is not affiliated with,
+endorsed by, or sponsored by Juice Technology AG.

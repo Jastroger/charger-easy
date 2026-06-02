@@ -1,6 +1,6 @@
 # Home Assistant Setup
 
-Juice Charger Easy integrates with Home Assistant through MQTT.
+PV/MQTT Software for Charger Easy integrates with Home Assistant through MQTT.
 
 Home Assistant needs two things:
 
@@ -24,7 +24,7 @@ homeassistant/...
 Default device:
 
 ```text
-Juice Charger Easy
+PV/MQTT Software for Charger Easy
 ```
 
 Default device ID:
@@ -79,8 +79,8 @@ negative = grid export
 ## Publish Grid Power Automation
 
 ```yaml
-alias: Juice Charger - Publish Grid Power
-description: Publish grid import/export power for Juice Charger Easy PV mode.
+alias: Charger Easy - Publish Grid Power
+description: Publish grid import/export power for PV mode.
 mode: restart
 trigger:
   - platform: state
@@ -105,7 +105,7 @@ This example is intentionally generic. Adjust the entity IDs and thresholds to
 your installation.
 
 ```yaml
-alias: Juice Charger - Auto PV Mode
+alias: Charger Easy - Auto PV Mode
 description: Switch to PV mode when export is stable, pause when surplus disappears.
 mode: restart
 trigger:
@@ -146,7 +146,7 @@ action:
 If you use `instant` mode and want to reduce current when export disappears:
 
 ```yaml
-alias: Juice Charger - Reduce Instant Current
+alias: Charger Easy - Reduce Instant Current
 mode: single
 trigger:
   - platform: numeric_state

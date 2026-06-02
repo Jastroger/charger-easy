@@ -60,7 +60,7 @@ minimum, restrict publish access to:
 | Client | Should publish |
 | --- | --- |
 | Home Assistant | `juicebooster/ha/gridPower`, `juicebooster/mode/set`, `juicebooster/instantCurrent/set` |
-| Juice Charger Easy | `juicebooster/state`, `juicebooster/availability`, discovery and legacy state topics |
+| Controller software | `juicebooster/state`, `juicebooster/availability`, discovery and legacy state topics |
 
 Retained state topics contain energy and vehicle status. Treat the broker as a
 private system and clear retained messages before decommissioning hardware.

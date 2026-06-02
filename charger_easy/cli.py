@@ -10,7 +10,7 @@ from charger_easy.runtime import ChargerRuntime
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Juice CHARGER Easy MQTT control service")
+    parser = argparse.ArgumentParser(description="Unofficial Charger Easy PV/MQTT control service")
     parser.add_argument(
         "--config",
         help="Pfad zur config.yaml. Standard: CHARGER_EASY_CONFIG oder /opt/juice-charger/config.yaml",
@@ -36,4 +36,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

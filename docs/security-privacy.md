@@ -1,8 +1,8 @@
 # Security and Privacy
 
-Juice Charger Easy is intended for a trusted local network. It controls EV
-charging behavior and publishes household energy status, so treat it like other
-home automation infrastructure.
+PV/MQTT Software for Charger Easy is intended for a trusted local network. It
+controls EV charging behavior and publishes household energy status, so treat
+it like other home automation infrastructure.
 
 ## Main Risks
 

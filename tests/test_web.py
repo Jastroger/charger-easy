@@ -56,15 +56,15 @@ class FakeRuntime:
 
 class WebDashboardTests(unittest.TestCase):
     def test_dashboard_contains_api_hooks(self) -> None:
-        html = render_dashboard("Juice Charger Easy")
+        html = render_dashboard("PV/MQTT Software for Charger Easy")
 
         self.assertIn("/api/state", html)
         self.assertIn("/api/mode", html)
         self.assertIn("/api/instant-current", html)
-        self.assertIn("Juice Charger Easy", html)
+        self.assertIn("PV/MQTT Software for Charger Easy", html)
 
     def test_dashboard_separates_selected_mode_from_hardware_override(self) -> None:
-        html = render_dashboard("Juice Charger Easy")
+        html = render_dashboard("PV/MQTT Software for Charger Easy")
 
         self.assertIn("hardwareOverrideNotice", html)
         self.assertIn("HW-FreeCharge", html)

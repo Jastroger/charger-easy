@@ -15,7 +15,7 @@ class WebConfig:
     enabled: bool = True
     host: str = "0.0.0.0"
     port: int = 8080
-    title: str = "Juice Charger Easy"
+    title: str = "PV/MQTT Software for Charger Easy"
 
 
 class WebDashboardServer:

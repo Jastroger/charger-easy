@@ -1,8 +1,8 @@
 # Architecture
 
-Juice Charger Easy is a local controller that sits between Home Assistant,
-MQTT, Raspberry Pi GPIO/SPI, and the Juice Booster Easy / Juice CHARGER Easy
-hardware.
+PV/MQTT Software for Charger Easy is an unofficial local controller software
+that sits between Home Assistant, MQTT, Raspberry Pi GPIO/SPI, and
+installations using Juice Booster Easy / Juice CHARGER Easy hardware.
 
 It does not replace the charger safety hardware. It requests a current, reads
 hardware state, and publishes status.
