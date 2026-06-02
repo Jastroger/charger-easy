@@ -14,6 +14,13 @@ Important: the software does not replace the hardware safety concept. The
 hardware current selector, RLC reductions, CP vehicle state, and the Juice
 Booster Easy control board remain active limits.
 
+## Credits
+
+This repository is a fork of the original
+[Andreas1312/charger-easy](https://github.com/Andreas1312/charger-easy)
+project by Andreas1312. This fork builds on that work and adds the current
+Home Assistant, MQTT, PV surplus, and dashboard commissioning improvements.
+
 ## Features
 
 - PV surplus charging from a Home Assistant grid-power MQTT value.

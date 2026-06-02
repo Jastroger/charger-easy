@@ -840,12 +840,12 @@ DASHBOARD_TEMPLATE = """<!doctype html>
                 <div class="metric-card">
                   <div class="label">Fahrzeug</div>
                   <div id="vehicle" class="metric-value compact">--</div>
-                  <div class="unit">Status</div>
+                  <div id="vehicleDetail" class="unit">Erkennung</div>
                 </div>
                 <div class="metric-card">
-                  <div class="label">CP-State</div>
+                  <div class="label">CP-Status</div>
                   <div id="cpState" class="metric-value compact">--</div>
-                  <div class="unit">Kontakt</div>
+                  <div id="cpStateDetail" class="unit">Control Pilot</div>
                 </div>
               </div>
 
@@ -1036,6 +1036,24 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       return "Ausgeglichen";
     }
 
+    function cpStateLabel(state) {
+      const cp = state.cp_state || "--";
+      if (cp === "A") return "A · frei";
+      if (cp === "B") return "B · bereit";
+      if (cp === "C") return state.is_charging ? "C · lädt" : "C · aktiv";
+      if (cp === "E" || cp === "F") return cp + " · Fehler";
+      return cp;
+    }
+
+    function cpStateDetail(state) {
+      const cp = state.cp_state || "--";
+      if (cp === "A") return "kein Fahrzeug";
+      if (cp === "B") return "Auto angesteckt";
+      if (cp === "C") return state.is_charging ? "Auto lädt" : "Auto ladebereit";
+      if (cp === "E" || cp === "F") return "Hardwarefehler";
+      return "Control Pilot";
+    }
+
     function meterPercent(state) {
       const current = numberOrNull(state.effective_current_A);
       const max = numberOrNull(state.hw_max_current);
@@ -1126,7 +1144,8 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       $("modeBadge").textContent = label(MODE_LABELS, selectedMode);
       $("reasonBadge").textContent = reasonText;
       $("hardwareOverrideNotice").hidden = !hardwareOverride;
-      $("vehicle").textContent = state.vehicle_connected ? "Verbunden" : "Kein Auto";
+      $("vehicle").textContent = state.vehicle_connected ? "Erkannt" : "Kein Auto";
+      $("vehicleDetail").textContent = state.vehicle_connected ? "Auto angesteckt" : "nicht angesteckt";
       $("targetCurrent").textContent = fmtAmp(state.target_current_A);
       $("pvStatus").textContent = pvLabel(state);
       $("meterFill").style.width = percent === null ? "0%" : percent + "%";
@@ -1136,7 +1155,8 @@ DASHBOARD_TEMPLATE = """<!doctype html>
       $("surplus").textContent = fmt(surplus, 0);
       $("gridPower").textContent = fmt(grid, 0);
       $("gridUnit").textContent = gridUnit(grid);
-      $("cpState").textContent = state.cp_state || "--";
+      $("cpState").textContent = cpStateLabel(state);
+      $("cpStateDetail").textContent = cpStateDetail(state);
       $("hwMax").textContent = fmt(state.hw_max_current, 0);
       $("rlc").textContent = fmt(state.rlc_percentage, 0);
       $("reason").textContent = reasonText;
