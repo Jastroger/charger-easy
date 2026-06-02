@@ -533,8 +533,11 @@ smart-home
 
 ## License
 
-TODO: add a license file before a public release. Until a license is added,
-reuse rights are not clearly defined.
+This project is licensed under the Apache License 2.0.
+Copyright (c) 2026 Jan Korte
+
+You are free to use, modify, distribute, and commercialize this software in accordance with the terms of the Apache License 2.0.
+See the LICENSE file for details.
 
 ## Disclaimer
 
