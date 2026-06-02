@@ -358,8 +358,6 @@ Default BCM GPIO mapping:
 | buzzer | `13` |
 | SPI CE0/MOSI/MISO/SCLK | `8`, `10`, `9`, `11` |
 
-Wiring placeholder: add `docs/images/wiring-overview.png` before publishing.
-
 See [hardware documentation](docs/hardware.md).
 
 ## Operating Modes
@@ -465,7 +463,6 @@ input through state and the dashboard.
 - [MQTT](docs/mqtt.md)
 - [Hardware](docs/hardware.md)
 - [Security and Privacy](docs/security-privacy.md)
-- [Image placeholders](docs/images/README.md)
 
 ## Development
 
