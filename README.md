@@ -12,9 +12,6 @@ and PV surplus charging while keeping the hardware safety limits in place.
 This is not an official Juice Technology product. Product names are used only to
 describe the compatible hardware.
 
-Screenshot placeholder: add `docs/images/dashboard.png` before publishing.
-See [docs/images/README.md](docs/images/README.md) for all planned image slots.
-
 ## Why This Exists
 
 Many installations using Juice Booster Easy / Juice CHARGER Easy hardware
