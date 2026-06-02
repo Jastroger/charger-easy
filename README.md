@@ -41,7 +41,7 @@ and the Charger Easy control board remain active boundaries.
 
 ## Screenshots
 
-see [Screenshots](docs/images/README.md)
+see [Screenshots](docs/images/screenshots.md)
 
 ## Safety Note
 
