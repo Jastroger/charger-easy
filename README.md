@@ -42,6 +42,16 @@ and the Charger Easy control board remain active boundaries.
 - RLC support through DIP2 and four RLC inputs
 - MQTT based integration for Home Assistant and legacy EVCC-style topics
 
+## Screenshots
+
+<img width="1440" height="900" alt="03-dashboard-hardware-freecharge" src="https://github.com/user-attachments/assets/c97d95f5-ed68-4dd3-82c9-f4594dbd6a00" />
+<img width="1440" height="900" alt="02-dashboard-no-vehicle-diagnostics" src="https://github.com/user-attachments/assets/f8f7d84e-56b0-4386-ae19-6c2a2a7336a8" />
+<img width="390" height="2035" alt="04-dashboard-mobile-pv-surplus" src="https://github.com/user-attachments/assets/efca9142-a7d3-4f66-b210-82d03ba53534" />
+<img width="808" height="821" alt="image" src="https://github.com/user-attachments/assets/483b5158-3261-4268-9635-dff99f87da04" />
+
+
+
+
 ## Safety Note
 
 This project interacts with EV charging hardware. Mains voltage work can be
