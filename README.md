@@ -502,29 +502,6 @@ Contributions are welcome, especially:
 Please keep hardware claims specific and tested. If a behavior is unclear,
 document it as a TODO rather than implying support.
 
-## Repository Metadata Suggestions
-
-Suggested GitHub description:
-
-```text
-Unofficial Home Assistant and MQTT PV surplus controller software for Juice CHARGER Easy / Juice Booster Easy hardware.
-```
-
-Suggested GitHub topics:
-
-```text
-home-assistant
-mqtt
-solar
-pv-surplus
-ev-charging
-raspberry-pi
-juice-booster
-wallbox
-energy-management
-smart-home
-```
-
 ## License
 
 This project is licensed under the Apache License 2.0.
